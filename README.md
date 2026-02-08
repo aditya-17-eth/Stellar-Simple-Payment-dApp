@@ -118,24 +118,6 @@ Handles the complete payment flow:
 - Success/error state management
 - Transaction hash display with explorer link
 
-## 📸 Screenshots
-
-### Disconnected State
-
-![Disconnected](./screenshots/disconnected.png)
-
-### Connected with Balance
-
-![Connected](./screenshots/connected.png)
-
-### Sending Payment
-
-![Sending](./screenshots/sending.png)
-
-### Transaction Success
-
-![Success](./screenshots/success.png)
-
 ## ⚠️ Important Notes
 
 - This dApp is configured for **TESTNET only** - no real funds are involved
