@@ -2,7 +2,8 @@
 
 A simple, elegant dApp for sending XLM payments on the Stellar TESTNET. Built with React, TypeScript, and the Freighter wallet.
 
-![Stellar Payment dApp](./screenshots/app-preview.png)
+![Stellar Payment dApp](<img width="1903" height="897" alt="image" src="https://github.com/user-attachments/assets/f1c2db58-7808-4b54-9095-0d7f68ba4209" />
+)
 
 ## ✨ Features
 
@@ -36,7 +37,7 @@ Before you begin, ensure you have:
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone <https://github.com/aditya-17-eth/Stellar-Simple-Payment-dApp>
 cd stellar-payment-dapp
 ```
 
