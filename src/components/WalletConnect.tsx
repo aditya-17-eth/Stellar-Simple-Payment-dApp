@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { WalletSelector } from './WalletSelector';
 
 interface WalletConnectProps {
   publicKey: string | null;
@@ -6,14 +7,11 @@ interface WalletConnectProps {
   isLoading: boolean;
   error: string | null;
   isCorrectNetwork: boolean;
+  walletName: string;
   onConnect: () => void;
   onDisconnect: () => void;
 }
 
-/**
- * Shorts a Stellar public key for display
- * Example: GABCD...WXYZ
- */
 function truncateAddress(address: string): string {
   if (address.length <= 12) return address;
   return `${address.slice(0, 6)}...${address.slice(-6)}`;
@@ -25,32 +23,36 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
   isLoading,
   error,
   isCorrectNetwork,
+  walletName,
   onConnect,
   onDisconnect,
 }) => {
+  const [showSelector, setShowSelector] = useState(false);
 
-  // Connected state - show address and disconnect button
+  // Connected state
   if (isConnected && publicKey) {
     return (
       <div className="flex flex-col items-center gap-4">
-        {/* Network warning */}
         {!isCorrectNetwork && (
           <div className="px-4 py-2 bg-yellow-500/20 border border-yellow-500/50 rounded-lg">
             <p className="text-yellow-400 text-sm">
-              ⚠️ Please switch to TESTNET in Freighter settings
+              ⚠️ Please switch to TESTNET in your wallet settings
             </p>
           </div>
         )}
-        
-        {/* Connected address display */}
+
         <div className="flex items-center gap-3 px-4 py-2 bg-green-500/20 border border-green-500/50 rounded-lg">
           <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          <span className="text-green-400 font-mono text-sm">
-            {truncateAddress(publicKey)}
-          </span>
+          <div className="flex items-center gap-2">
+            {walletName && (
+              <span className="text-green-300 text-sm font-medium">{walletName}</span>
+            )}
+            <span className="text-green-400 font-mono text-sm">
+              {truncateAddress(publicKey)}
+            </span>
+          </div>
         </div>
 
-        {/* Full address (expandable) */}
         <details className="text-center">
           <summary className="text-gray-400 text-sm cursor-pointer hover:text-gray-300">
             Show full address
@@ -60,7 +62,6 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
           </p>
         </details>
 
-        {/* Disconnect button */}
         <button
           onClick={onDisconnect}
           className="px-4 py-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
@@ -71,11 +72,11 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
     );
   }
 
-  // Not connected - show connect button
+  // Not connected
   return (
     <div className="flex flex-col items-center gap-4">
       <button
-        onClick={onConnect}
+        onClick={() => setShowSelector(true)}
         disabled={isLoading}
         className="px-8 py-4 bg-gradient-to-r from-stellar-blue to-stellar-purple text-white font-semibold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-stellar-purple/25"
       >
@@ -92,12 +93,20 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
         )}
       </button>
 
-      {/* Error message */}
       {error && (
         <div className="px-4 py-2 bg-red-500/20 border border-red-500/50 rounded-lg">
           <p className="text-red-400 text-sm">{error}</p>
         </div>
       )}
+
+      <WalletSelector
+        isOpen={showSelector}
+        onClose={() => setShowSelector(false)}
+        onSelectWallet={() => {
+          setShowSelector(false);
+          onConnect();
+        }}
+      />
     </div>
   );
 };

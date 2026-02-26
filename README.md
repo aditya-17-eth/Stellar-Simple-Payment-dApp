@@ -1,88 +1,105 @@
-# Stellar Payment dApp
+# StellarSwap
 
-A simple, elegant dApp for sending XLM payments on the Stellar TESTNET. Built with React, TypeScript, and the Freighter wallet.
+A production-style token swap interface built on Stellar's native DEX orderbook. Swap assets, track transactions, and view real-time swap activity — all powered by the Stellar network and Soroban smart contracts.
 
-![Stellar Payment dApp](./screenshots/app-preview.png)
+![StellarSwap]
 
 ## ✨ Features
 
-- **Wallet Connection**: Seamlessly connect your Freighter wallet
-- **Balance Display**: View your XLM balance in real-time
-- **Send Payments**: Send XLM to any Stellar address
-- **Transaction Feedback**: Get instant success/error notifications with transaction hashes
-- **Beautiful UI**: Modern, dark-themed interface with smooth animations
+- **Token Swapping** — Swap XLM, USDC, SRT, and other assets using Stellar's built-in decentralized orderbook (`manageSellOffer`)
+- **Multi-Wallet Support** — Connect with Freighter, xBull, or other Stellar-compatible wallets
+- **Live Price Preview** — Real-time orderbook pricing with estimated receive amounts before you swap
+- **Transaction Lifecycle** — Full pending → success → failed tracking with explorer links
+- **On-Chain Activity Tracking** — Soroban smart contract records swap metadata and emits events
+- **Real-Time Feed** — Live swap activity feed that updates without page refresh
+- **XLM Payments** — Send XLM to any Stellar address (preserved from v1)
+- **Balance Display** — View your XLM balance in real-time
+
+## 🔗 Supported Wallets
+
+| Wallet                             | Status       |
+| ---------------------------------- | ------------ |
+| [Freighter](https://freighter.app) | ✅ Supported |
+| [xBull](https://xbull.app)         | ✅ Supported |
 
 ## 🛠 Tech Stack
 
-| Technology                                               | Purpose                |
-| -------------------------------------------------------- | ---------------------- |
-| [React](https://react.dev/)                              | UI Framework           |
-| [TypeScript](https://www.typescriptlang.org/)            | Type Safety            |
-| [Vite](https://vitejs.dev/)                              | Build Tool             |
-| [Tailwind CSS](https://tailwindcss.com/)                 | Styling                |
-| [Stellar SDK](https://github.com/stellar/js-stellar-sdk) | Blockchain Integration |
-| [Freighter API](https://docs.freighter.app/)             | Wallet Connection      |
+| Technology                                                              | Purpose                       |
+| ----------------------------------------------------------------------- | ----------------------------- |
+| [React](https://react.dev/)                                             | UI Framework                  |
+| [TypeScript](https://www.typescriptlang.org/)                           | Type Safety                   |
+| [Vite](https://vitejs.dev/)                                             | Build Tool                    |
+| [Tailwind CSS](https://tailwindcss.com/)                                | Styling                       |
+| [Stellar SDK](https://github.com/stellar/js-stellar-sdk)                | Blockchain + DEX Integration  |
+| [StellarWalletsKit](https://github.com/nicecoder97/stellar-wallets-kit) | Multi-Wallet Management       |
+| [Soroban](https://soroban.stellar.org/)                                 | Smart Contract (Swap Tracker) |
 
 ## 📋 Prerequisites
 
-Before you begin, ensure you have:
-
-1. **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
-2. **Freighter Wallet** browser extension - [Install](https://www.freighter.app/)
-3. A **funded TESTNET account** - [Create one here](https://laboratory.stellar.org/#account-creator?network=test)
+1. **Node.js** v18+ — [Download](https://nodejs.org/)
+2. **Stellar Wallet** browser extension:
+   - [Freighter](https://freighter.app) (recommended)
+   - [xBull](https://xbull.app) (alternative)
+3. **Funded TESTNET account** — [Create via Friendbot](https://laboratory.stellar.org/#account-creator?network=test)
+4. _(Optional)_ **Rust + Stellar CLI** — for building/deploying the Soroban contract
 
 ## 🚀 Getting Started
 
-### 1. Clone the repository
+### 1. Clone & install
 
 ```bash
-git clone <your-repo-url>
-cd stellar-payment-dapp
-```
-
-### 2. Install dependencies
-
-```bash
+git clone <https://github.com/aditya-17-eth/Stellar-Simple-Payment-dApp>
+cd stellar-swap
 npm install
 ```
 
-### 3. Start the development server
+### 2. Start development server
 
 ```bash
 npm run dev
 ```
 
-### 4. Open in browser
+### 3. Open in browser
 
-Navigate to `http://localhost:5173` in your browser.
+Navigate to `http://localhost:5173`
 
-### 5. Configure Freighter
+### 4. Configure your wallet
 
-1. Open Freighter extension
-2. Go to Settings → Network
-3. Select **TESTNET**
-4. Fund your account using [Friendbot](https://laboratory.stellar.org/#account-creator?network=test)
+1. Open your Stellar wallet extension
+2. Switch to **TESTNET**
+3. Fund your account using [Friendbot](https://laboratory.stellar.org/#account-creator?network=test)
 
 ## 📁 Project Structure
 
 ```
-stellar-payment-dapp/
-├── public/
-│   └── stellar-logo.svg        # App favicon
+stellar-swap/
+├── contracts/
+│   └── swap_tracker/          # Soroban smart contract (Rust)
+│       ├── Cargo.toml
+│       └── src/lib.rs
 ├── src/
+│   ├── wallet/
+│   │   └── walletKit.ts       # StellarWalletsKit initialization
+│   ├── stellar/
+│   │   └── dex.ts             # Horizon DEX orderbook + swap execution
+│   ├── contract/
+│   │   └── sorobanClient.ts   # Soroban contract interaction
 │   ├── components/
-│   │   ├── WalletConnect.tsx   # Wallet connection UI
-│   │   ├── Balance.tsx         # XLM balance display
-│   │   └── SendPayment.tsx     # Payment form & submission
+│   │   ├── SwapForm.tsx       # Token swap form + price preview
+│   │   ├── SwapActivityFeed.tsx # Real-time swap activity
+│   │   ├── WalletSelector.tsx # Multi-wallet selector modal
+│   │   ├── TransactionStatus.tsx # Tx lifecycle display
+│   │   ├── WalletConnect.tsx  # Wallet connection UI
+│   │   ├── Balance.tsx        # XLM balance display
+│   │   └── SendPayment.tsx    # XLM payment form
 │   ├── hooks/
-│   │   └── useWallet.ts        # Wallet state management
+│   │   └── useWallet.ts       # Wallet state management
 │   ├── utils/
-│   │   ├── stellar.ts          # Stellar SDK utilities
-│   │   └── constants.ts        # Network configuration
-│   ├── App.tsx                 # Main application
-│   ├── main.tsx                # Entry point
-│   └── index.css               # Global styles
-├── index.html
+│   │   ├── stellar.ts         # Stellar SDK utilities
+│   │   └── constants.ts       # Network config + asset definitions
+│   ├── App.tsx                # Main application
+│   ├── main.tsx               # Entry point
+│   └── index.css              # Global styles
 ├── package.json
 ├── tailwind.config.js
 ├── tsconfig.json
@@ -90,40 +107,65 @@ stellar-payment-dapp/
 └── README.md
 ```
 
-## 🔑 Key Components
+## 🔧 Soroban Contract
 
-### `useWallet` Hook
+The **Swap Tracker** contract is a Soroban smart contract that records swap metadata on-chain and emits events for real-time tracking.
 
-Manages Freighter wallet connection state, including:
+### Contract Functions
 
-- Detecting if Freighter is installed
-- Connecting and disconnecting
-- Verifying TESTNET network
-- Error handling
+| Function                                                     | Description                            |
+| ------------------------------------------------------------ | -------------------------------------- |
+| `record_swap(user, from_asset, to_asset, amount, timestamp)` | Stores swap record + emits event       |
+| `get_recent_swaps(count)`                                    | Returns the last N swap records        |
+| `get_swap_count()`                                           | Returns total number of recorded swaps |
 
-### `stellar.ts` Utilities
+### Deployed Contract
 
-Core functions for Stellar blockchain interaction:
+- **Network**: Stellar TESTNET
+- **Contract Address**: `PLACEHOLDER_CONTRACT_ID` _(update after deployment)_
 
-- `fetchBalance()` - Gets XLM balance from Horizon
-- `sendPayment()` - Builds, signs, and submits transactions
-- `isValidStellarAddress()` - Validates Stellar public keys
+### Building the Contract
 
-### `SendPayment` Component
+```bash
+cd contracts/swap_tracker
+cargo build --target wasm32-unknown-unknown --release
+```
 
-Handles the complete payment flow:
+### Deploying the Contract
 
-- Form validation (address format, sufficient balance)
-- Transaction building and signing
-- Success/error state management
-- Transaction hash display with explorer link
+```bash
+stellar contract deploy \
+  --wasm target/wasm32-unknown-unknown/release/swap_tracker.wasm \
+  --network testnet \
+  --source <YOUR_SECRET_KEY>
+```
 
-## ⚠️ Important Notes
+After deployment, update `SWAP_TRACKER_CONTRACT_ID` in `src/utils/constants.ts`.
 
-- This dApp is configured for **TESTNET only** - no real funds are involved
-- Minimum 1 XLM is required to keep an account active on Stellar
-- Sending to a new account requires at least 1 XLM (to fund the account)
-- Always keep at least 1 XLM in your account as a reserve
+## 🔄 How Swaps Work
+
+1. User selects **sell** and **buy** assets (e.g., XLM → USDC)
+2. App fetches **live orderbook data** from Horizon
+3. User sees **estimated receive amount** and best available price
+4. User clicks **Swap** → transaction built with `manageSellOffer` (offerId: 0)
+5. Wallet prompts for **signature approval**
+6. Transaction submitted to **Stellar TESTNET**
+7. On success: swap metadata recorded in **Soroban contract**
+8. Activity feed updates in **real-time** via event polling
+
+## 📝 Example Transaction
+
+- **Transaction Hash**: _(add after first successful swap)_
+- **View on Explorer**: [Stellar Expert (TESTNET)](https://stellar.expert/explorer/testnet)
+
+## 🖼 Screenshots
+
+| Screen              | Preview                                      |
+| ------------------- | -------------------------------------------- |
+| Swap Interface      | ![Swap](./screenshots/swap-form.png)         |
+| Wallet Selector     | ![Wallet](./screenshots/wallet-selector.png) |
+| Activity Feed       | ![Activity](./screenshots/activity-feed.png) |
+| Transaction Success | ![Success](./screenshots/tx-success.png)     |
 
 ## 🔧 Available Scripts
 
@@ -134,12 +176,19 @@ Handles the complete payment flow:
 | `npm run preview` | Preview production build |
 | `npm run lint`    | Run ESLint               |
 
+## ⚠️ Important Notes
+
+- This application is configured for **TESTNET only** — no real funds are at risk
+- Swaps use Stellar's **native DEX orderbook** (not AMMs or liquidity pools)
+- The Soroban contract is used **only for activity tracking**, not for executing swaps
+- Always maintain at least **1 XLM** in your account as the Stellar minimum balance
+
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -m 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
 5. Open a Pull Request
 
 ## 📄 License
@@ -149,6 +198,7 @@ This project is open source and available under the [MIT License](LICENSE).
 ## 🔗 Resources
 
 - [Stellar Documentation](https://developers.stellar.org/docs)
+- [Soroban Documentation](https://soroban.stellar.org/)
 - [Stellar Laboratory](https://laboratory.stellar.org/)
 - [Stellar Expert Explorer](https://stellar.expert/)
 - [Freighter Wallet Docs](https://docs.freighter.app/)
