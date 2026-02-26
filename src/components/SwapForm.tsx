@@ -7,7 +7,7 @@ import { TransactionStatus, TxLifecycleStatus } from './TransactionStatus';
 interface SwapFormProps {
   publicKey: string;
   signTransaction: (xdr: string) => Promise<string>;
-  onSwapSuccess?: () => void;
+  onSwapSuccess?: (data: { fromAsset: string; toAsset: string; amount: string; txHash: string }) => void;
 }
 
 /**
@@ -129,8 +129,13 @@ export const SwapForm: React.FC<SwapFormProps> = ({
         signTransaction
       ).catch((err) => console.warn('Failed to record swap:', err));
 
-      // Notify parent
-      onSwapSuccess?.();
+      // Notify parent with swap details for instant feed update
+      onSwapSuccess?.({
+        fromAsset: sellAsset.code,
+        toAsset: buyAsset.code,
+        amount: sellAmount,
+        txHash: result.hash,
+      });
     } catch (err) {
       console.error('Swap error:', err);
       setTxStatus('failed');

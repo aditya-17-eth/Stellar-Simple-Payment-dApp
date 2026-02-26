@@ -4,7 +4,7 @@ import { WalletConnect } from './components/WalletConnect';
 import { Balance } from './components/Balance';
 import { SendPayment } from './components/SendPayment';
 import { SwapForm } from './components/SwapForm';
-import { SwapActivityFeed } from './components/SwapActivityFeed';
+import { SwapActivityFeed, LocalSwapRecord } from './components/SwapActivityFeed';
 import { fetchBalance } from './utils/stellar';
 
 function App() {
@@ -23,6 +23,7 @@ function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [currentBalance, setCurrentBalance] = useState('0');
   const [swapRefreshTrigger, setSwapRefreshTrigger] = useState(0);
+  const [localSwaps, setLocalSwaps] = useState<LocalSwapRecord[]>([]);
 
   // Active tab: 'swap' | 'send'
   const [activeTab, setActiveTab] = useState<'swap' | 'send'>('swap');
@@ -31,10 +32,22 @@ function App() {
     setRefreshTrigger((prev) => prev + 1);
   }, []);
 
-  const handleSwapSuccess = useCallback(() => {
+  const handleSwapSuccess = useCallback((swapData?: { fromAsset: string; toAsset: string; amount: string; txHash: string }) => {
     setRefreshTrigger((prev) => prev + 1);
     setSwapRefreshTrigger((prev) => prev + 1);
-  }, []);
+
+    // Add swap to local feed immediately
+    if (swapData && publicKey) {
+      setLocalSwaps((prev) => [{
+        user: publicKey,
+        fromAsset: swapData.fromAsset,
+        toAsset: swapData.toAsset,
+        amount: swapData.amount,
+        timestamp: Math.floor(Date.now() / 1000),
+        txHash: swapData.txHash,
+      }, ...prev]);
+    }
+  }, [publicKey]);
 
   const updateBalance = useCallback(async () => {
     if (publicKey) {
@@ -154,6 +167,7 @@ function App() {
                   <section>
                     <SwapActivityFeed
                       refreshTrigger={swapRefreshTrigger}
+                      localSwaps={localSwaps}
                     />
                   </section>
                 </div>

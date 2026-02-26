@@ -25,7 +25,7 @@ export async function recordSwap(
   amount: string,
   signTx: (xdr: string) => Promise<string>
 ): Promise<string> {
-  if (SWAP_TRACKER_CONTRACT_ID === 'PLACEHOLDER_CONTRACT_ID') {
+  if ((SWAP_TRACKER_CONTRACT_ID as string) === 'PLACEHOLDER_CONTRACT_ID') {
     console.warn('Swap tracker contract not deployed yet. Skipping recording.');
     return 'no-contract';
   }
@@ -95,7 +95,7 @@ export async function recordSwap(
  * Fetches recent swap records from the Soroban contract via simulation.
  */
 export async function getRecentSwaps(count: number = 10): Promise<SwapRecordData[]> {
-  if (SWAP_TRACKER_CONTRACT_ID === 'PLACEHOLDER_CONTRACT_ID') {
+  if ((SWAP_TRACKER_CONTRACT_ID as string) === 'PLACEHOLDER_CONTRACT_ID') {
     console.warn('Swap tracker contract not deployed. Returning empty list.');
     return [];
   }
@@ -197,7 +197,7 @@ export async function getRecentSwaps(count: number = 10): Promise<SwapRecordData
 export async function pollSwapEvents(
   cursor?: string
 ): Promise<{ events: SwapRecordData[]; latestCursor: string }> {
-  if (SWAP_TRACKER_CONTRACT_ID === 'PLACEHOLDER_CONTRACT_ID') {
+  if ((SWAP_TRACKER_CONTRACT_ID as string) === 'PLACEHOLDER_CONTRACT_ID') {
     return { events: [], latestCursor: cursor || '' };
   }
 

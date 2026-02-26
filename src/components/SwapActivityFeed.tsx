@@ -2,8 +2,18 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getRecentSwaps, pollSwapEvents, SwapRecordData } from '../contract/sorobanClient';
 import { STELLAR_EXPERT_URL, SWAP_TRACKER_CONTRACT_ID } from '../utils/constants';
 
+export interface LocalSwapRecord {
+  user: string;
+  fromAsset: string;
+  toAsset: string;
+  amount: string;
+  timestamp: number;
+  txHash?: string;
+}
+
 interface SwapActivityFeedProps {
   refreshTrigger?: number;
+  localSwaps?: LocalSwapRecord[];
 }
 
 function truncateAddress(address: string): string {
@@ -23,35 +33,33 @@ function formatTimestamp(timestamp: number): string {
 }
 
 /**
- * Displays a real-time feed of recent swap activity from the Soroban contract.
- * Polls for new events every 10 seconds.
+ * Displays a real-time feed of recent swap activity.
+ * Merges local (in-session) swaps with on-chain records from the Soroban contract.
  */
 export const SwapActivityFeed: React.FC<SwapActivityFeedProps> = ({
   refreshTrigger = 0,
+  localSwaps = [],
 }) => {
-  const [swaps, setSwaps] = useState<SwapRecordData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [contractSwaps, setContractSwaps] = useState<SwapRecordData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const cursorRef = useRef<string>('');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const isContractDeployed = SWAP_TRACKER_CONTRACT_ID !== 'PLACEHOLDER_CONTRACT_ID';
+  const isContractDeployed = (SWAP_TRACKER_CONTRACT_ID as string) !== 'PLACEHOLDER_CONTRACT_ID';
 
-  // Load initial swap history
+  // Load swap history from contract
   const loadSwaps = useCallback(async () => {
-    if (!isContractDeployed) {
-      setIsLoading(false);
-      return;
-    }
+    if (!isContractDeployed) return;
 
     try {
       setIsLoading(true);
       const records = await getRecentSwaps(20);
-      setSwaps(records);
+      setContractSwaps(records);
       setError(null);
     } catch (err) {
-      console.error('Failed to load swaps:', err);
-      setError('Failed to load swap history');
+      console.error('Failed to load swaps from contract:', err);
+      setError('Could not load on-chain history');
     } finally {
       setIsLoading(false);
     }
@@ -64,7 +72,7 @@ export const SwapActivityFeed: React.FC<SwapActivityFeedProps> = ({
     try {
       const { events, latestCursor } = await pollSwapEvents(cursorRef.current);
       if (events.length > 0) {
-        setSwaps((prev) => [...events, ...prev].slice(0, 50));
+        setContractSwaps((prev) => [...events, ...prev].slice(0, 50));
         cursorRef.current = latestCursor;
       }
     } catch (err) {
@@ -80,12 +88,19 @@ export const SwapActivityFeed: React.FC<SwapActivityFeedProps> = ({
   // Start polling
   useEffect(() => {
     if (!isContractDeployed) return;
-
     intervalRef.current = setInterval(pollForUpdates, 10_000);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [pollForUpdates, isContractDeployed]);
+
+  // Merge local swaps (most recent first) with contract swaps, deduplicate
+  const allSwaps: (SwapRecordData | LocalSwapRecord)[] = [
+    ...localSwaps.sort((a, b) => b.timestamp - a.timestamp),
+    ...contractSwaps,
+  ].slice(0, 50);
+
+  const hasSwaps = allSwaps.length > 0;
 
   return (
     <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6">
@@ -96,29 +111,13 @@ export const SwapActivityFeed: React.FC<SwapActivityFeedProps> = ({
           </svg>
           Recent Swap Activity
         </h3>
-        {isContractDeployed && (
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            <span className="text-xs text-gray-400">Live</span>
-          </div>
-        )}
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+          <span className="text-xs text-gray-400">Live</span>
+        </div>
       </div>
 
-      {!isContractDeployed && (
-        <div className="text-center py-8">
-          <div className="w-12 h-12 bg-yellow-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
-            <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-          </div>
-          <p className="text-gray-400 text-sm mb-1">Swap tracker contract not deployed</p>
-          <p className="text-gray-500 text-xs">
-            Deploy the Soroban contract and update the contract address in constants.ts
-          </p>
-        </div>
-      )}
-
-      {isContractDeployed && isLoading && (
+      {isLoading && !hasSwaps && (
         <div className="text-center py-8">
           <svg className="animate-spin h-6 w-6 text-stellar-purple mx-auto mb-3" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -128,7 +127,7 @@ export const SwapActivityFeed: React.FC<SwapActivityFeedProps> = ({
         </div>
       )}
 
-      {isContractDeployed && error && (
+      {error && !hasSwaps && (
         <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg">
           <p className="text-red-400 text-sm">{error}</p>
           <button onClick={loadSwaps} className="text-sm text-gray-400 hover:text-white mt-2 transition-colors">
@@ -137,16 +136,16 @@ export const SwapActivityFeed: React.FC<SwapActivityFeedProps> = ({
         </div>
       )}
 
-      {isContractDeployed && !isLoading && !error && swaps.length === 0 && (
+      {!isLoading && !hasSwaps && (
         <div className="text-center py-8">
           <p className="text-gray-400 text-sm">No swaps recorded yet</p>
           <p className="text-gray-500 text-xs mt-1">Completed swaps will appear here</p>
         </div>
       )}
 
-      {isContractDeployed && swaps.length > 0 && (
+      {hasSwaps && (
         <div className="space-y-2 max-h-80 overflow-y-auto">
-          {swaps.map((swap, index) => (
+          {allSwaps.map((swap, index) => (
             <div
               key={`${swap.timestamp}-${index}`}
               className="flex items-center justify-between p-3 bg-black/20 border border-white/5 rounded-lg hover:border-white/10 transition-colors"

@@ -15,7 +15,7 @@ export const FRIENDBOT_URL = 'https://friendbot.stellar.org';
 
 // Deployed Soroban swap tracker contract address (TESTNET)
 // Update this after contract deployment
-export const SWAP_TRACKER_CONTRACT_ID = 'PLACEHOLDER_CONTRACT_ID';
+export const SWAP_TRACKER_CONTRACT_ID = 'YOUR_CONTRACT_ADDRESS_HERE';
 
 // Supported assets for token swaps
 export interface AssetConfig {

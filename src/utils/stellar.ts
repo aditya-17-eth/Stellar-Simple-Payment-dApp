@@ -1,5 +1,5 @@
 import * as StellarSdk from '@stellar/stellar-sdk';
-import * as freighterApi from '@stellar/freighter-api';
+
 import { HORIZON_URL, NETWORK_PASSPHRASE } from './constants';
 
 // Initialize the Horizon server for TESTNET
@@ -33,6 +33,40 @@ export async function fetchBalance(publicKey: string): Promise<string> {
 }
 
 /**
+ * Fetches the balance of a non-native asset (e.g. USDC, SRT) for a Stellar account.
+ * 
+ * @param publicKey - The Stellar public key to check
+ * @param assetCode - The asset code (e.g. "USDC")
+ * @param assetIssuer - The issuer account of the asset
+ * @returns The asset balance as a string, or "0" if no trustline exists
+ */
+export async function fetchTokenBalance(
+  publicKey: string,
+  assetCode: string,
+  assetIssuer: string
+): Promise<string> {
+  try {
+    const account = await server.loadAccount(publicKey);
+
+    const tokenBalance = account.balances.find(
+      (b) =>
+        b.asset_type !== 'native' &&
+        'asset_code' in b &&
+        'asset_issuer' in b &&
+        (b as { asset_code: string }).asset_code === assetCode &&
+        (b as { asset_issuer: string }).asset_issuer === assetIssuer
+    );
+
+    return tokenBalance ? tokenBalance.balance : '0';
+  } catch (error) {
+    if (error instanceof StellarSdk.NotFoundError) {
+      return '0';
+    }
+    throw error;
+  }
+}
+
+/**
  * Validates if a string is a valid Stellar public key
  * 
  * @param address - The address to validate
@@ -50,23 +84,14 @@ export function isValidStellarAddress(address: string): boolean {
 /**
  * Helper to extract signed XDR from Freighter response
  */
-function extractSignedXDR(result: unknown): string | null {
-  if (typeof result === 'string') {
-    return result;
-  }
-  if (result && typeof result === 'object') {
-    const obj = result as Record<string, unknown>;
-    if (typeof obj.signedTxXdr === 'string') return obj.signedTxXdr;
-    if (typeof obj.signedXDR === 'string') return obj.signedXDR;
-    if (typeof obj.xdr === 'string') return obj.xdr;
-  }
-  return null;
-}
+
 
 export async function sendPayment(
   sourcePublicKey: string,
   destinationAddress: string,
-  amount: string
+  amount: string,
+  memo: string = '',
+  signTransaction: (xdr: string) => Promise<string>
 ): Promise<{ hash: string }> {
   console.log('=== Starting Payment ===');
   console.log('From:', sourcePublicKey);
@@ -75,106 +100,58 @@ export async function sendPayment(
 
   // Step 1: Load the source account to get sequence number
   const sourceAccount = await server.loadAccount(sourcePublicKey);
-  console.log('Source account loaded');
+  
+  // Step 2: Build the transaction
+  const txBuilder = new StellarSdk.TransactionBuilder(sourceAccount, {
+    fee: StellarSdk.BASE_FEE,
+    networkPassphrase: NETWORK_PASSPHRASE,
+  });
 
-  // Step 2: Check if destination account exists
-  let destinationExists = true;
+  // Add memo if provided
+  if (memo) {
+    txBuilder.addMemo(StellarSdk.Memo.text(memo));
+  }
+
+  // Check if destination exists
   try {
     await server.loadAccount(destinationAddress);
-    console.log('Destination account exists');
+    // Exists: Payment operation
+    txBuilder.addOperation(
+      StellarSdk.Operation.payment({
+        destination: destinationAddress,
+        asset: StellarSdk.Asset.native(),
+        amount: amount,
+      })
+    );
   } catch (error) {
     if (error instanceof StellarSdk.NotFoundError) {
-      destinationExists = false;
-      console.log('Destination account does not exist - will use createAccount');
+      // Doesn't exist: Create Account operation
+      txBuilder.addOperation(
+        StellarSdk.Operation.createAccount({
+          destination: destinationAddress,
+          startingBalance: amount,
+        })
+      );
     } else {
       throw error;
     }
   }
 
-  // Step 3: Build the transaction
-  // We use TransactionBuilder to construct the transaction with proper formatting
-  const txBuilder = new StellarSdk.TransactionBuilder(sourceAccount, {
-    fee: StellarSdk.BASE_FEE, // Base fee for the transaction (100 stroops)
-    networkPassphrase: NETWORK_PASSPHRASE,
-  });
+  const transaction = txBuilder.setTimeout(180).build();
+  const xdr = transaction.toXDR();
 
-  let transaction: StellarSdk.Transaction;
+  console.log('Transaction built, signing...');
 
-  if (destinationExists) {
-    // If destination exists, use a regular payment operation
-    transaction = txBuilder
-      .addOperation(
-        StellarSdk.Operation.payment({
-          destination: destinationAddress,
-          asset: StellarSdk.Asset.native(), // XLM (native asset)
-          amount: amount,
-        })
-      )
-      .setTimeout(180) // Transaction valid for 3 minutes
-      .build();
-  } else {
-    // If destination doesn't exist, use createAccount operation
-    // This creates and funds the account in one operation
-    // Minimum balance on Stellar is 1 XLM for a new account
-    transaction = txBuilder
-      .addOperation(
-        StellarSdk.Operation.createAccount({
-          destination: destinationAddress,
-          startingBalance: amount,
-        })
-      )
-      .setTimeout(180)
-      .build();
-  }
+  // Step 3: Sign using provided callback
+  const signedXDR = await signTransaction(xdr);
 
-  console.log('Transaction built, XDR:', transaction.toXDR().substring(0, 50) + '...');
-
-  // Step 4: Sign the transaction using Freighter wallet
-  // This will prompt the user in the Freighter extension to approve
-  console.log('Requesting signature from Freighter...');
-  
-  let signedXDR: string | null = null;
-  
-  try {
-    const signResult = await freighterApi.signTransaction(
-      transaction.toXDR(),
-      {
-        networkPassphrase: NETWORK_PASSPHRASE,
-      }
-    );
-    
-    console.log('Sign result:', signResult);
-    signedXDR = extractSignedXDR(signResult);
-    
-    // Check for error in response
-    if (signResult && typeof signResult === 'object' && 'error' in signResult) {
-      const errorMsg = (signResult as { error: string }).error;
-      throw new Error(errorMsg || 'Transaction signing failed');
-    }
-  } catch (err) {
-    console.error('Signing error:', err);
-    if (err instanceof Error) {
-      if (err.message.includes('User declined') || err.message.includes('rejected')) {
-        throw new Error('Transaction was rejected by user');
-      }
-      throw err;
-    }
-    throw new Error('Failed to sign transaction');
-  }
-
-  if (!signedXDR) {
-    throw new Error('No signed transaction returned from Freighter');
-  }
-
-  console.log('Transaction signed successfully');
-
-  // Step 5: Parse the signed transaction and submit to the network
+  // Step 4: Submit to network
+  console.log('Submitting transaction to network...');
   const signedTransaction = StellarSdk.TransactionBuilder.fromXDR(
     signedXDR,
     NETWORK_PASSPHRASE
   );
 
-  console.log('Submitting transaction to network...');
   const result = await server.submitTransaction(signedTransaction);
   console.log('Transaction submitted! Hash:', result.hash);
 
