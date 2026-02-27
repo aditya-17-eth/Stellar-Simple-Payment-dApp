@@ -158,15 +158,6 @@ After deployment, update `SWAP_TRACKER_CONTRACT_ID` in `src/utils/constants.ts`.
 - **Transaction Hash**: _(add after first successful swap)_
 - **View on Explorer**: [Stellar Expert (TESTNET)](https://stellar.expert/explorer/testnet)
 
-## 🖼 Screenshots
-
-| Screen              | Preview                                      |
-| ------------------- | -------------------------------------------- |
-| Swap Interface      | ![Swap](./screenshots/swap-form.png)         |
-| Wallet Selector     | ![Wallet](./screenshots/wallet-selector.png) |
-| Activity Feed       | ![Activity](./screenshots/activity-feed.png) |
-| Transaction Success | ![Success](./screenshots/tx-success.png)     |
-
 ## 🔧 Available Scripts
 
 | Command           | Description              |
