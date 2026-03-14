@@ -241,94 +241,6 @@ npm test -- --coverage
 npm run test:ui
 ```
 
-### Testing Approach
-
-**Unit Tests:**
-- Test individual React components in isolation
-- Validate specific examples and edge cases
-- Mock external dependencies (Stellar SDK, wallet APIs)
-- Focus on concrete scenarios (e.g., "connecting with Freighter wallet")
-
-**Property-Based Tests:**
-- Verify universal properties across all inputs
-- Use randomized input generation for comprehensive coverage
-- Validate invariants that should always hold
-- Focus on general rules (e.g., "all invalid inputs are rejected")
-
-### Test Coverage
-
-- **Target:** 70%+ coverage for critical paths
-- **Critical Components:** WalletConnect, SwapForm, Balance, transaction handling
-- **Coverage Report:** Generated in `coverage/` directory after running `npm test -- --coverage`
-
-### Test Files
-
-Tests are co-located with source files using the `.test.tsx` or `.test.ts` suffix:
-
-- `src/components/__tests__/WalletConnect.test.tsx`
-- `src/components/__tests__/SwapForm.test.tsx`
-- `src/components/__tests__/Balance.test.tsx`
-- `src/components/__tests__/InputValidation.property.test.ts`
-
-## 🔧 Troubleshooting
-
-### Common Issues & Solutions
-
-#### 1. Wallet Connection Fails
-
-**Symptoms:**
-- "Connect Wallet" button doesn't respond
-- Wallet popup doesn't appear
-- Error: "Wallet not found"
-
-**Solutions:**
-- Ensure wallet extension (Freighter or xBull) is installed and enabled
-- Check that wallet is unlocked (open extension and enter password)
-- Refresh the page and try again
-- Try a different browser (Chrome, Firefox, Edge recommended)
-- Check browser console for errors (F12 → Console tab)
-
-#### 2. Transaction Fails
-
-**Symptoms:**
-- "Transaction failed" error message
-- Swap doesn't execute after wallet approval
-- Error: "Insufficient balance" or "Bad auth"
-
-**Solutions:**
-- **Check TESTNET balance:** Ensure you have enough XLM (minimum 1 XLM + transaction fees)
-- **Get more test XLM:** Visit [Friendbot](https://laboratory.stellar.org/#account-creator?network=test)
-- **Verify network:** Ensure wallet is on TESTNET, not Mainnet
-- **Check asset trustlines:** For non-XLM assets, ensure you have a trustline established
-- **Try smaller amount:** Reduce swap amount if close to your balance limit
-- **Wait and retry:** Network congestion can cause temporary failures
-
-#### 3. Build Fails
-
-**Symptoms:**
-  2. Search for contract address: `CBEWIQV4KSH4KXA5V7B5ELMQM7WY7JTCTHB5DEPEFVJRLL62FGMJULOY`
-- TypeScript compilation errors
-- Module not found errors
-
-**Solutions:**
-- **Clear dependencies and reinstall:**
-  ```bash
-  rm -rf node_modules package-lock.json
-  npm install
-  ```
-- **Check Node.js version:** Ensure you're using Node.js 18.x or later
-  ```bash
-  node --version
-  ```
-- **Update dependencies:**
-  ```bash
-  npm update
-  ```
-- **Check for TypeScript errors:**
-  ```bash
-  npx tsc --noEmit
-  ```
-
 ## 📚 Resources
 
 ### Stellar & Soroban Documentation
@@ -425,18 +337,6 @@ Please ensure your code:
 ## 📄 License
 
 This project is open source and available under the [MIT License](LICENSE).
-
-## 🔒 Security
-
-This application follows security best practices:
-
-- **No Key Storage:** Private keys never leave your wallet extension
-- **TESTNET Only:** Application is configured for TESTNET only
-- **HTTPS:** All API calls use secure HTTPS connections
-2. Search for the contract address: `CBEWIQV4KSH4KXA5V7B5ELMQM7WY7JTCTHB5DEPEFVJRLL62FGMJULOY`processing
-- **Open Source:** Code is publicly auditable
-
-**Important:** This is a demonstration application on TESTNET. Do not use with Mainnet accounts containing real funds without thorough security review.
 
 ---
 
