@@ -3,6 +3,7 @@ import { SUPPORTED_ASSETS, AssetConfig } from '../utils/constants';
 import { fetchOrderbook, estimateSwapReceive, executeSwap } from '../stellar/dex';
 import { recordSwap } from '../contract/sorobanClient';
 import { TransactionStatus, TxLifecycleStatus } from './TransactionStatus';
+import { validateAmount } from '../utils/validation';
 
 interface SwapFormProps {
   publicKey: string;
@@ -28,6 +29,7 @@ export const SwapForm: React.FC<SwapFormProps> = ({
   const [txStatus, setTxStatus] = useState<TxLifecycleStatus>('idle');
   const [txHash, setTxHash] = useState<string | null>(null);
   const [txError, setTxError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -89,22 +91,45 @@ export const SwapForm: React.FC<SwapFormProps> = ({
     setSellAmount('');
     setEstimatedReceive('');
     setBestPrice('');
+    setValidationError(null);
+  };
+
+  // Handle amount input with validation
+  const handleAmountChange = (value: string) => {
+    setSellAmount(value);
+    setValidationError(null);
+
+    // Validate on change
+    if (value) {
+      const validation = validateAmount(value, 'Swap amount');
+      if (!validation.isValid) {
+        setValidationError(validation.error || null);
+      }
+    }
   };
 
   // Execute the swap
   const handleSwap = async () => {
-    if (!sellAmount || parseFloat(sellAmount) <= 0) return;
-    if (!bestPrice || bestPrice === 'N/A' || bestPrice === '0') {
-      setTxError('No available liquidity for this pair');
-      setTxStatus('failed');
+    // Validate amount before proceeding
+    const validation = validateAmount(sellAmount, 'Swap amount');
+    if (!validation.isValid) {
+      setValidationError(validation.error || null);
       return;
     }
+
+    if (!sellAmount || parseFloat(sellAmount) <= 0) return;
 
     setTxStatus('pending');
     setTxError(null);
     setTxHash(null);
+    setValidationError(null);
 
     try {
+      // Check for liquidity before attempting swap
+      if (!bestPrice || bestPrice === 'N/A' || bestPrice === '0') {
+        throw new Error('No available liquidity for this pair');
+      }
+
       // Use 98% of best price as minimum (2% slippage tolerance)
       const slippagePrice = (parseFloat(bestPrice) * 0.98).toFixed(7);
 
@@ -147,6 +172,8 @@ export const SwapForm: React.FC<SwapFormProps> = ({
           setTxError('Insufficient balance for this swap');
         } else if (err.message.includes('op_cross_self')) {
           setTxError('Cannot trade with your own offers');
+        } else if (err.message.includes('timeout') || err.message.includes('network')) {
+          setTxError('Network error. Please check your connection and try again.');
         } else {
           setTxError(err.message);
         }
@@ -160,6 +187,7 @@ export const SwapForm: React.FC<SwapFormProps> = ({
     setTxStatus('idle');
     setTxHash(null);
     setTxError(null);
+    setValidationError(null);
     setSellAmount('');
     setEstimatedReceive('');
   };
@@ -183,7 +211,7 @@ export const SwapForm: React.FC<SwapFormProps> = ({
             <input
               type="number"
               value={sellAmount}
-              onChange={(e) => setSellAmount(e.target.value)}
+              onChange={(e) => handleAmountChange(e.target.value)}
               placeholder="0.00"
               disabled={txStatus === 'pending'}
               className="flex-1 bg-transparent text-white text-2xl font-medium placeholder-gray-600 outline-none"
@@ -274,6 +302,13 @@ export const SwapForm: React.FC<SwapFormProps> = ({
           <span className="text-yellow-400">2%</span>
         </div>
 
+        {/* Validation error */}
+        {validationError && (
+          <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-sm text-yellow-400">
+            {validationError}
+          </div>
+        )}
+
         {/* Transaction status */}
         <TransactionStatus
           status={txStatus}
@@ -290,7 +325,8 @@ export const SwapForm: React.FC<SwapFormProps> = ({
               txStatus === 'pending' ||
               !sellAmount ||
               parseFloat(sellAmount) <= 0 ||
-              isLoadingPrice
+              isLoadingPrice ||
+              !!validationError
             }
             className="w-full py-4 bg-gradient-to-r from-stellar-blue to-stellar-purple text-white font-semibold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-stellar-purple/25"
           >

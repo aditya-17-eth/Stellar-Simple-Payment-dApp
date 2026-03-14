@@ -7,6 +7,37 @@ import { SwapForm } from './components/SwapForm';
 import { SwapActivityFeed, LocalSwapRecord } from './components/SwapActivityFeed';
 import { fetchBalance } from './utils/stellar';
 
+/**
+ * StellarSwap - Main Application Component
+ * 
+ * SECURITY ARCHITECTURE:
+ * 
+ * 1. KEY MANAGEMENT:
+ *    - Private keys NEVER enter this application
+ *    - All key material is managed by the wallet extension (Freighter/xBull)
+ *    - Application only handles PUBLIC keys and signed transaction XDRs
+ * 
+ * 2. TRANSACTION SIGNING:
+ *    - All transactions are signed by the wallet extension via signTransaction callback
+ *    - User must explicitly approve each transaction in the wallet UI
+ *    - Application builds transactions locally but delegates signing to the wallet
+ * 
+ * 3. STATE MANAGEMENT:
+ *    - Only public keys are stored in React state (publicKey)
+ *    - No sensitive data is persisted to localStorage or any storage
+ *    - Wallet connection state is ephemeral and session-based
+ * 
+ * 4. TRUST BOUNDARIES:
+ *    - Wallet extension is the trusted authority for key management
+ *    - Application trusts the wallet to handle authorization and signing
+ *    - User reviews all transactions in the wallet before approval
+ * 
+ * 5. NETWORK SECURITY:
+ *    - All API calls use HTTPS (Horizon, Soroban RPC)
+ *    - Application is configured for TESTNET only
+ *    - Network warnings are displayed to users
+ */
+
 function App() {
   const {
     publicKey,
@@ -66,6 +97,20 @@ function App() {
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMzRTFCREIiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
 
       <div className="relative z-10">
+        {/* TESTNET Warning Banner */}
+        <div className="bg-yellow-500/10 border-b border-yellow-500/30 backdrop-blur-sm">
+          <div className="max-w-5xl mx-auto px-4 py-3">
+            <div className="flex items-center justify-center gap-2 text-yellow-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span className="font-medium text-sm">
+                TESTNET ONLY - This application is for demonstration purposes. Do not use with real funds.
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* Header */}
         <header className="border-b border-white/10 backdrop-blur-sm">
           <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">

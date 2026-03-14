@@ -94,8 +94,12 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
       </button>
 
       {error && (
-        <div className="px-4 py-2 bg-red-500/20 border border-red-500/50 rounded-lg">
-          <p className="text-red-400 text-sm">{error}</p>
+        <div className="px-4 py-3 bg-red-500/20 border border-red-500/50 rounded-lg max-w-md">
+          <p className="text-red-400 text-sm font-medium mb-1">Connection Failed</p>
+          <p className="text-red-300 text-xs">{error}</p>
+          <p className="text-gray-400 text-xs mt-2">
+            Make sure your wallet extension is installed and unlocked, then try again.
+          </p>
         </div>
       )}
 

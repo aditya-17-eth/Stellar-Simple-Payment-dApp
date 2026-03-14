@@ -2,6 +2,18 @@ import { useState, useCallback, useEffect } from 'react';
 import * as freighterApi from '@stellar/freighter-api';
 import { NETWORK_PASSPHRASE } from '../utils/constants';
 
+/**
+ * useWallet Hook - Manages wallet connection state and operations
+ * 
+ * SECURITY DESIGN:
+ * - Only stores PUBLIC keys in React state (publicKey)
+ * - Private keys remain in the wallet extension at all times
+ * - Transaction signing is delegated to the wallet via signTransaction()
+ * - No sensitive data is persisted to localStorage or any storage
+ * - Wallet extension handles all user authorization prompts
+ * - This hook acts as a secure interface to the wallet, never handling key material
+ */
+
 interface WalletState {
   publicKey: string | null;
   isConnected: boolean;
@@ -211,6 +223,13 @@ export function useWallet(): WalletState {
 
   /**
    * Signs a transaction XDR using the connected wallet.
+   * 
+   * SECURITY CRITICAL:
+   * - Delegates signing to the wallet extension (Freighter)
+   * - Private keys NEVER enter this application
+   * - User must approve the transaction in the wallet UI
+   * - Only the signed XDR is returned to the application
+   * - If user rejects, an error is thrown
    */
   const signTransaction = useCallback(async (xdr: string): Promise<string> => {
     try {

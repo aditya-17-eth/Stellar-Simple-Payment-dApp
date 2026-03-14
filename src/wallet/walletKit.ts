@@ -7,6 +7,13 @@
  * multi-wallet support (Freighter, xBull, Albedo, etc.).
  *
  * Install the kit:  npm install @creit.tech/stellar-wallets-kit
+ * 
+ * SECURITY ASSUMPTIONS:
+ * 1. Private keys NEVER leave the wallet extension - all key material is managed by Freighter
+ * 2. Transaction signing is delegated to the wallet extension via signTransaction()
+ * 3. This application only receives public keys and signed transaction XDRs
+ * 4. No key material is stored in application state, localStorage, or any persistent storage
+ * 5. The wallet extension is responsible for user authorization and key security
  */
 
 import * as freighterApi from '@stellar/freighter-api';
@@ -58,6 +65,9 @@ export async function isWalletInstalled(): Promise<boolean> {
 
 /**
  * Connects to the wallet and returns the public address.
+ * 
+ * SECURITY: This function only retrieves the PUBLIC key from the wallet.
+ * Private keys remain secure within the wallet extension and never enter this application.
  */
 export async function connectWallet(): Promise<string> {
   // Try requestAccess (v2)
@@ -81,6 +91,8 @@ export async function connectWallet(): Promise<string> {
 
 /**
  * Gets the current wallet address.
+ * 
+ * SECURITY: Returns only the PUBLIC address. Private keys are never exposed.
  */
 export async function getWalletAddress(): Promise<string | null> {
   if ('getAddress' in freighterApi) {
@@ -102,6 +114,13 @@ export async function getWalletAddress(): Promise<string | null> {
 
 /**
  * Signs a transaction XDR using the connected wallet.
+ * 
+ * SECURITY CRITICAL:
+ * - This function delegates signing to the wallet extension (Freighter)
+ * - The wallet extension prompts the user for approval
+ * - Private keys NEVER enter this application - signing happens entirely within the wallet
+ * - We only receive the signed transaction XDR back from the wallet
+ * - The user can review and reject the transaction in the wallet UI
  */
 export async function signTransaction(xdr: string): Promise<string> {
   const signResult = await freighterApi.signTransaction(xdr, {

@@ -17,6 +17,20 @@ export interface SwapRecordData {
 /**
  * Records a swap in the Soroban contract.
  * Builds and submits an invokeContract transaction.
+ * 
+ * SECURITY:
+ * - Contract invocation transaction is built locally
+ * - Signing is delegated to the wallet via signTx callback
+ * - Private keys NEVER enter this function or application
+ * - User must approve the contract invocation in their wallet
+ * - Only public keys and signed XDRs are handled
+ * 
+ * @param publicKey - The user's public key (not private key!)
+ * @param fromAsset - Source asset code
+ * @param toAsset - Destination asset code
+ * @param amount - Swap amount
+ * @param signTx - Callback to sign via wallet (delegates to wallet extension)
+ * @returns Transaction hash on success
  */
 export async function recordSwap(
   publicKey: string,
@@ -63,7 +77,8 @@ export async function recordSwap(
 
     const preparedTx = StellarSdk.SorobanRpc.assembleTransaction(tx, simulated).build();
 
-    // Sign via wallet
+    // SECURITY: Sign via wallet - private keys never enter this application
+    // User must approve the contract invocation in their wallet extension
     const signedXdr = await signTx(preparedTx.toXDR());
     const signedTx = StellarSdk.TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE);
 

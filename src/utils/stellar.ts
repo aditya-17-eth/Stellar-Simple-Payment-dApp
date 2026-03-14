@@ -86,6 +86,23 @@ export function isValidStellarAddress(address: string): boolean {
  */
 
 
+/**
+ * Sends a payment transaction on the Stellar network.
+ * 
+ * SECURITY:
+ * - Transaction is built locally with user-provided parameters
+ * - Signing is delegated to the wallet via signTransaction callback
+ * - Private keys NEVER enter this function or application
+ * - User must approve the transaction in their wallet extension
+ * - Only public keys and signed XDRs are handled by this application
+ * 
+ * @param sourcePublicKey - The sender's public key (not private key!)
+ * @param destinationAddress - The recipient's public address
+ * @param amount - Amount to send in XLM
+ * @param memo - Optional memo text
+ * @param signTransaction - Callback to sign via wallet (delegates to wallet extension)
+ * @returns Transaction hash on success
+ */
 export async function sendPayment(
   sourcePublicKey: string,
   destinationAddress: string,
@@ -142,7 +159,8 @@ export async function sendPayment(
 
   console.log('Transaction built, signing...');
 
-  // Step 3: Sign using provided callback
+  // SECURITY: Sign using wallet callback - private keys never enter this application
+  // User must approve the transaction in their wallet extension
   const signedXDR = await signTransaction(xdr);
 
   // Step 4: Submit to network
@@ -152,7 +170,27 @@ export async function sendPayment(
     NETWORK_PASSPHRASE
   );
 
-  const result = await server.submitTransaction(signedTransaction);
+  let result;
+  try {
+    result = await server.submitTransaction(signedTransaction);
+  } catch (err: unknown) {
+    // Horizon returns detailed error codes in the response body
+    if (
+      err &&
+      typeof err === 'object' &&
+      'response' in err &&
+      err.response &&
+      typeof err.response === 'object' &&
+      'data' in err.response
+    ) {
+      const data = (err.response as { data?: { extras?: { result_codes?: unknown } } }).data;
+      const codes = data?.extras?.result_codes;
+      if (codes) {
+        throw new Error(`Transaction failed: ${JSON.stringify(codes)}`);
+      }
+    }
+    throw err;
+  }
   console.log('Transaction submitted! Hash:', result.hash);
 
   return { hash: result.hash };

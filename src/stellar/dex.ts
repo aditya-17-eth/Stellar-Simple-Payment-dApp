@@ -90,12 +90,18 @@ export async function estimateSwapReceive(
 /**
  * Executes a swap using manageSellOffer with offerId 0 (one-time fill).
  *
+ * SECURITY:
+ * - Transaction is built locally with user-provided parameters
+ * - Signing is delegated to the wallet via signTx callback
+ * - Private keys never enter this function or application
+ * - User must approve the transaction in their wallet
+ * 
  * @param sourcePublicKey - The sender's public key
  * @param sellingAsset - Asset being sold
  * @param buyingAsset - Asset being bought
  * @param sellAmount - Amount of selling asset to sell
  * @param minPrice - Minimum price (buying/selling ratio) to accept
- * @param signTx - Function to sign the transaction XDR
+ * @param signTx - Function to sign the transaction XDR (delegates to wallet)
  * @returns Transaction hash on success
  */
 export async function executeSwap(
@@ -179,7 +185,8 @@ export async function executeSwap(
     .setTimeout(180)
     .build();
 
-  // Sign using the provided signing function (from StellarWalletsKit)
+  // SECURITY: Sign using the provided signing function (from wallet extension)
+  // Private keys never enter this application - signing happens in the wallet
   const signedXDR = await signTx(transaction.toXDR());
 
   // Submit to the network

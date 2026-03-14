@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { sendPayment } from '../utils/stellar';
 import { useWallet } from '../hooks/useWallet';
+import { validateAmount, validateStellarAddress, validateBalance } from '../utils/validation';
 
 interface SendPaymentProps {
   publicKey: string;
@@ -19,13 +20,41 @@ export const SendPayment: React.FC<SendPaymentProps> = ({
   const [memo, setMemo] = useState('');
   const [status, setStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<{
+    destination?: string;
+    amount?: string;
+  }>({});
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!destination || !amount) return;
+    
+    // Validate all inputs
+    const errors: { destination?: string; amount?: string } = {};
+    
+    const addressValidation = validateStellarAddress(destination, 'Destination address');
+    if (!addressValidation.isValid) {
+      errors.destination = addressValidation.error;
+    }
+    
+    const amountValidation = validateAmount(amount, 'Amount');
+    if (!amountValidation.isValid) {
+      errors.amount = amountValidation.error;
+    } else {
+      // Check balance if amount is valid
+      const balanceValidation = validateBalance(amount, balance);
+      if (!balanceValidation.isValid) {
+        errors.amount = balanceValidation.error;
+      }
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
 
     setStatus('pending');
     setErrorMessage(null);
+    setValidationErrors({});
 
     try {
       await sendPayment(publicKey, destination, amount, memo, signTransaction);
@@ -37,7 +66,34 @@ export const SendPayment: React.FC<SendPaymentProps> = ({
     } catch (err) {
       console.error('Payment failed:', err);
       setStatus('error');
-      setErrorMessage(err instanceof Error ? err.message : 'Payment failed');
+      
+      if (err instanceof Error) {
+        if (err.message.includes('User declined') || err.message.includes('rejected')) {
+          setErrorMessage('Transaction was rejected by user');
+        } else if (err.message.includes('op_underfunded')) {
+          setErrorMessage('Insufficient balance for this payment');
+        } else if (err.message.includes('timeout') || err.message.includes('network')) {
+          setErrorMessage('Network error. Please check your connection and try again.');
+        } else {
+          setErrorMessage(err.message);
+        }
+      } else {
+        setErrorMessage('Payment failed. Please try again.');
+      }
+    }
+  };
+
+  const handleDestinationChange = (value: string) => {
+    setDestination(value);
+    if (validationErrors.destination) {
+      setValidationErrors({ ...validationErrors, destination: undefined });
+    }
+  };
+
+  const handleAmountChange = (value: string) => {
+    setAmount(value);
+    if (validationErrors.amount) {
+      setValidationErrors({ ...validationErrors, amount: undefined });
     }
   };
 
@@ -56,11 +112,16 @@ export const SendPayment: React.FC<SendPaymentProps> = ({
           <input
             type="text"
             value={destination}
-            onChange={(e) => setDestination(e.target.value)}
+            onChange={(e) => handleDestinationChange(e.target.value)}
             placeholder="G..."
-            className="w-full bg-black/30 border border-white/10 text-white rounded-xl px-4 py-3 placeholder-gray-600 outline-none focus:border-stellar-purple transition-colors font-mono text-sm"
+            className={`w-full bg-black/30 border ${
+              validationErrors.destination ? 'border-red-500/50' : 'border-white/10'
+            } text-white rounded-xl px-4 py-3 placeholder-gray-600 outline-none focus:border-stellar-purple transition-colors font-mono text-sm`}
             disabled={status === 'pending'}
           />
+          {validationErrors.destination && (
+            <p className="text-red-400 text-xs mt-1">{validationErrors.destination}</p>
+          )}
         </div>
 
         <div>
@@ -70,9 +131,11 @@ export const SendPayment: React.FC<SendPaymentProps> = ({
               type="number"
               step="0.0000001"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => handleAmountChange(e.target.value)}
               placeholder="0.00"
-              className="w-full bg-black/30 border border-white/10 text-white rounded-xl px-4 py-3 placeholder-gray-600 outline-none focus:border-stellar-purple transition-colors"
+              className={`w-full bg-black/30 border ${
+                validationErrors.amount ? 'border-red-500/50' : 'border-white/10'
+              } text-white rounded-xl px-4 py-3 placeholder-gray-600 outline-none focus:border-stellar-purple transition-colors`}
               disabled={status === 'pending'}
             />
             <button
@@ -84,6 +147,9 @@ export const SendPayment: React.FC<SendPaymentProps> = ({
             </button>
           </div>
           <p className="text-xs text-gray-500 mt-1">Available: {balance} XLM</p>
+          {validationErrors.amount && (
+            <p className="text-red-400 text-xs mt-1">{validationErrors.amount}</p>
+          )}
         </div>
 
         <div>

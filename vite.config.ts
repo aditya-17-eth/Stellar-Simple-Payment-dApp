@@ -14,4 +14,7 @@ export default defineConfig({
       buffer: "buffer",
     },
   },
+  build: {
+    sourcemap: true, // Enable source maps for production debugging
+  },
 });
