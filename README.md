@@ -311,7 +311,7 @@ Once deployed, you can:
 
 ### Demo Video
 
-**Video Walkthrough:** `https://youtu.be/1DVpUVUDokM`
+**Video Walkthrough:** https://youtu.be/1DVpUVUDokM
 
 
 ---
