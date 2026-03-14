@@ -275,13 +275,8 @@ npm run test:ui
 
 ### Live Demo
 
-**Deployed Application:** `[Coming Soon]`
+**Deployed Application:** https://stellar-simple-payment-dapp.vercel.app/
 
-Once deployed, you can:
-- Connect your TESTNET wallet
-- Swap test assets (XLM, USDC, SRT)
-- View real-time swap activity
-- Send XLM payments
 
 ## Screenshots
 
