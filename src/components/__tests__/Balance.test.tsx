@@ -10,6 +10,11 @@ vi.mock('../../utils/stellar', () => ({
   fetchTokenBalance: vi.fn(),
 }));
 
+// Mock the reward token client
+vi.mock('../../contract/rewardTokenClient', () => ({
+  getRewardBalance: vi.fn().mockResolvedValue('0'),
+}));
+
 // Mock the constants
 vi.mock('../../utils/constants', () => ({
   SUPPORTED_ASSETS: [
@@ -17,6 +22,10 @@ vi.mock('../../utils/constants', () => ({
     { code: 'USDC', issuer: 'GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5', name: 'USD Coin' },
     { code: 'SRT', issuer: 'GCDNJUBQSX7AJWLJACMJ7I4BC3Z47BQUTMHEICZLE6MU4KQBRYG5JY6B', name: 'SRT Token' },
   ],
+  SOROBAN_RPC_URL: 'https://soroban-testnet.stellar.org',
+  NETWORK_PASSPHRASE: 'Test SDF Network ; September 2015',
+  REWARD_TOKEN_CONTRACT_ID: 'PLACEHOLDER_REWARD_TOKEN_CONTRACT_ID',
+  REWARD_PER_SWAP: 10,
 }));
 
 describe('Balance', () => {
@@ -436,7 +445,7 @@ describe('Balance', () => {
       render(<Balance publicKey={mockPublicKey} />);
 
       await waitFor(() => {
-        const grid = document.querySelector('.grid-cols-2');
+        const grid = document.querySelector('[class*="grid-cols"]');
         expect(grid).toBeInTheDocument();
       });
     });

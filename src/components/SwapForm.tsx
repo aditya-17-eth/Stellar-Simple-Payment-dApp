@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { SUPPORTED_ASSETS, AssetConfig } from '../utils/constants';
+import { SUPPORTED_ASSETS, AssetConfig, REWARD_PER_SWAP } from '../utils/constants';
 import { fetchOrderbook, estimateSwapReceive, executeSwap } from '../stellar/dex';
 import { recordSwap } from '../contract/sorobanClient';
 import { TransactionStatus, TxLifecycleStatus } from './TransactionStatus';
@@ -30,6 +30,7 @@ export const SwapForm: React.FC<SwapFormProps> = ({
   const [txHash, setTxHash] = useState<string | null>(null);
   const [txError, setTxError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [showRewardToast, setShowRewardToast] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -145,6 +146,10 @@ export const SwapForm: React.FC<SwapFormProps> = ({
       setTxHash(result.hash);
       setTxStatus('success');
 
+      // Show reward notification
+      setShowRewardToast(true);
+      setTimeout(() => setShowRewardToast(false), 5000);
+
       // Record swap in Soroban contract (non-blocking)
       recordSwap(
         publicKey,
@@ -190,6 +195,7 @@ export const SwapForm: React.FC<SwapFormProps> = ({
     setValidationError(null);
     setSellAmount('');
     setEstimatedReceive('');
+    setShowRewardToast(false);
   };
 
   return (
@@ -214,7 +220,7 @@ export const SwapForm: React.FC<SwapFormProps> = ({
               onChange={(e) => handleAmountChange(e.target.value)}
               placeholder="0.00"
               disabled={txStatus === 'pending'}
-              className="flex-1 bg-transparent text-white text-2xl font-medium placeholder-gray-600 outline-none"
+              className="flex-1 bg-transparent text-white text-2xl font-medium placeholder-gray-600 outline-none min-w-0 text-[16px] sm:text-2xl"
             />
             <select
               value={sellAssetIndex}
@@ -317,6 +323,14 @@ export const SwapForm: React.FC<SwapFormProps> = ({
           onReset={resetTx}
         />
 
+        {/* Reward toast notification */}
+        {showRewardToast && (
+          <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl text-sm text-amber-400 flex items-center gap-2 animate-fade-in">
+            <span className="text-lg">🎉</span>
+            <span>+{REWARD_PER_SWAP} SWPT reward tokens earned!</span>
+          </div>
+        )}
+
         {/* Swap button */}
         {txStatus !== 'success' && (
           <button
@@ -328,7 +342,7 @@ export const SwapForm: React.FC<SwapFormProps> = ({
               isLoadingPrice ||
               !!validationError
             }
-            className="w-full py-4 bg-gradient-to-r from-stellar-blue to-stellar-purple text-white font-semibold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-stellar-purple/25"
+            className="w-full py-4 min-h-[48px] bg-gradient-to-r from-stellar-blue to-stellar-purple text-white font-semibold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-stellar-purple/25"
           >
             {txStatus === 'pending' ? (
               <span className="flex items-center justify-center gap-2">

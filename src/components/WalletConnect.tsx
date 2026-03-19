@@ -14,7 +14,7 @@ interface WalletConnectProps {
 
 function truncateAddress(address: string): string {
   if (address.length <= 12) return address;
-  return `${address.slice(0, 6)}...${address.slice(-6)}`;
+  return `${address.slice(0, 4)}...${address.slice(-4)}`;
 }
 
 export const WalletConnect: React.FC<WalletConnectProps> = ({
@@ -78,7 +78,7 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({
       <button
         onClick={() => setShowSelector(true)}
         disabled={isLoading}
-        className="px-8 py-4 bg-gradient-to-r from-stellar-blue to-stellar-purple text-white font-semibold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-stellar-purple/25"
+        className="w-full sm:w-auto px-8 py-4 min-h-[48px] bg-gradient-to-r from-stellar-blue to-stellar-purple text-white font-semibold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-stellar-purple/25"
       >
         {isLoading ? (
           <span className="flex items-center gap-2">
