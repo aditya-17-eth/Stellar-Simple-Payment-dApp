@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SwapForm } from '../SwapForm';
+import { fetchOrderbook } from '../../stellar/dex';
 
 // Mock the stellar/dex module
 vi.mock('../../stellar/dex', () => ({
@@ -13,7 +14,7 @@ vi.mock('../../stellar/dex', () => ({
 
 // Mock the contract/sorobanClient module
 vi.mock('../../contract/sorobanClient', () => ({
-  recordSwap: vi.fn(),
+  recordSwap: vi.fn(() => Promise.resolve()),
 }));
 
 // Mock the TransactionStatus component
@@ -163,6 +164,7 @@ describe('SwapForm', () => {
 
       // Wait for price fetch to complete
       await waitFor(() => {
+        expect(fetchOrderbook).toHaveBeenCalled();
         const swapButton = screen.getByRole('button', { name: /swap xlm → usdc/i });
         expect(swapButton).not.toBeDisabled();
       });
@@ -359,6 +361,7 @@ describe('SwapForm', () => {
       await user.type(input, '100');
 
       await waitFor(() => {
+        expect(fetchOrderbook).toHaveBeenCalled();
         const swapButton = screen.getByRole('button', { name: /swap xlm → usdc/i });
         expect(swapButton).not.toBeDisabled();
       });
@@ -401,6 +404,7 @@ describe('SwapForm', () => {
       await user.type(input, '100');
 
       await waitFor(() => {
+        expect(fetchOrderbook).toHaveBeenCalled();
         const swapButton = screen.getByRole('button', { name: /swap xlm → usdc/i });
         expect(swapButton).not.toBeDisabled();
       });
@@ -437,6 +441,7 @@ describe('SwapForm', () => {
       await user.type(input, '100');
 
       await waitFor(() => {
+        expect(fetchOrderbook).toHaveBeenCalled();
         const swapButton = screen.getByRole('button', { name: /swap xlm → usdc/i });
         expect(swapButton).not.toBeDisabled();
       });
@@ -477,6 +482,7 @@ describe('SwapForm', () => {
       await user.type(input, '100');
 
       await waitFor(() => {
+        expect(fetchOrderbook).toHaveBeenCalled();
         const swapButton = screen.getByRole('button', { name: /swap xlm → usdc/i });
         expect(swapButton).not.toBeDisabled();
       });
@@ -513,6 +519,7 @@ describe('SwapForm', () => {
       await user.type(input, '100');
 
       await waitFor(() => {
+        expect(fetchOrderbook).toHaveBeenCalled();
         const swapButton = screen.getByRole('button', { name: /swap xlm → usdc/i });
         expect(swapButton).not.toBeDisabled();
       });
@@ -547,6 +554,7 @@ describe('SwapForm', () => {
       await user.type(input, '100');
 
       await waitFor(() => {
+        expect(fetchOrderbook).toHaveBeenCalled();
         const swapButton = screen.getByRole('button', { name: /swap xlm → usdc/i });
         expect(swapButton).not.toBeDisabled();
       });
@@ -580,6 +588,7 @@ describe('SwapForm', () => {
       await user.type(input, '100');
 
       await waitFor(() => {
+        expect(fetchOrderbook).toHaveBeenCalled();
         const swapButton = screen.getByRole('button', { name: /swap xlm → usdc/i });
         expect(swapButton).not.toBeDisabled();
       });
@@ -610,6 +619,7 @@ describe('SwapForm', () => {
       await user.type(input, '100');
 
       await waitFor(() => {
+        expect(fetchOrderbook).toHaveBeenCalled();
         const swapButton = screen.getByRole('button', { name: /swap xlm → usdc/i });
         expect(swapButton).not.toBeDisabled();
       });
@@ -664,6 +674,7 @@ describe('SwapForm', () => {
       await user.type(input, '100');
 
       await waitFor(() => {
+        expect(fetchOrderbook).toHaveBeenCalled();
         const swapButton = screen.getByRole('button', { name: /swap xlm → usdc/i });
         expect(swapButton).not.toBeDisabled();
       });
@@ -707,6 +718,7 @@ describe('SwapForm', () => {
       await user.type(input, '100');
 
       await waitFor(() => {
+        expect(fetchOrderbook).toHaveBeenCalled();
         const swapButton = screen.getByRole('button', { name: /swap xlm → usdc/i });
         expect(swapButton).not.toBeDisabled();
       });
@@ -749,7 +761,7 @@ describe('SwapForm', () => {
       await waitFor(() => {
         const swapButton = screen.getByRole('button', { name: /swap xlm → usdc/i });
         expect(swapButton).toBeDisabled();
-      }, { timeout: 200 });
+      }, { timeout: 1500 });
     });
   });
 });

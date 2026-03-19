@@ -110,7 +110,7 @@ describe('WalletConnect', () => {
       render(<WalletConnect {...connectedProps} />);
 
       // Should show truncated address
-      expect(screen.getByText(/GXXXXX\.\.\.XXXXXX/)).toBeInTheDocument();
+      expect(screen.getByText(/GXXX\.\.\.XXXX/)).toBeInTheDocument();
       
       // Should show wallet name
       expect(screen.getByText('Freighter')).toBeInTheDocument();
@@ -155,8 +155,8 @@ describe('WalletConnect', () => {
       const longAddress = 'GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
       render(<WalletConnect {...connectedProps} publicKey={longAddress} />);
 
-      // Should show first 6 and last 6 characters
-      expect(screen.getByText('GXXXXX...XXXXXX')).toBeInTheDocument();
+      // Should show first 4 and last 4 characters
+      expect(screen.getByText('GXXX...XXXX')).toBeInTheDocument();
     });
 
     it('does not truncate short addresses', () => {

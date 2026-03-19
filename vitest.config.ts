@@ -1,28 +1,10 @@
-import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
-  plugins: [react()],
   test: {
+    environment: 'jsdom',
     globals: true,
-    environment: "jsdom",
-    setupFiles: ["./src/test/setup.ts"],
-    include: ["**/*.test.tsx", "**/*.test.ts"],
-    coverage: {
-      provider: "v8",
-      reporter: ["html", "text"],
-      exclude: [
-        "node_modules/**",
-        "dist/**",
-        "**/*.config.ts",
-        "**/*.config.js",
-        "src/test/**",
-      ],
-    },
+    pool: 'forks',      // 🔥 fixes worker crash (replaces deprecated threads: false)
+    setupFiles: ['./src/setupTests.ts'],
   },
-
-  resolve: {
-    alias: {
-    },
-  },
-});
+})
