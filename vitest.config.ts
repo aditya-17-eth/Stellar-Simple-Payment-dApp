@@ -20,13 +20,9 @@ export default defineConfig({
       ],
     },
   },
-  // Required for stellar-sdk to work in tests
-  define: {
-    global: "globalThis",
-  },
+
   resolve: {
     alias: {
-      buffer: "buffer",
     },
   },
 });
