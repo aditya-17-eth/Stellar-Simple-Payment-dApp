@@ -1,5 +1,6 @@
 # StellarSwap
 
+[![CI](https://github.com/aditya-17-eth/Stellar-Simple-Payment-dApp/actions/workflows/ci.yml/badge.svg)](https://github.com/aditya-17-eth/Stellar-Simple-Payment-dApp/actions/workflows/ci.yml)
 [![TESTNET](https://img.shields.io/badge/Network-TESTNET-yellow)](https://stellar.org)
 [![Stellar SDK](https://img.shields.io/badge/Stellar%20SDK-12.0-blue)](https://github.com/stellar/js-stellar-sdk)
 [![React](https://img.shields.io/badge/React-18.3-blue)](https://react.dev)
@@ -41,6 +42,8 @@ StellarSwap is a production-style decentralized token swap interface built on th
 - **Responsive UI** — Mobile-friendly interface built with Tailwind CSS
 - **Transaction Lifecycle Tracking** — Full pending → success → failed status with explorer links
 - **Live Price Preview** — Real-time orderbook pricing with estimated receive amounts
+- **Swap Rewards** — Earn SWPT reward tokens on every swap via inter-contract calls
+- **Mobile Responsive** — Fully usable on mobile with thumb-friendly buttons and adaptive layouts
 
 ## 🏗 Architecture & Technology Stack
 
@@ -67,8 +70,11 @@ StellarSwap is a production-style decentralized token swap interface built on th
 │  │  Component   │  │  Component   │  │  Component   │       │
 │  └──────┬───────┘  └───────┬──────┘  └────────┬─────┘       │
 │         │                  │                  │             │
-│         └──────────────────┼──────────────────┘             │
-│                            │                                │
+│  ┌──────┘──────────────────┼──────────────────┘             │
+│  │    ┌────────────────────┤                                │
+│  │    │  Balance Component (XLM + USDC + SWPT Rewards)      │
+│  │    └────────────────────┤                                │
+│  │                         │                                │
 │  ┌─────────────────────────▼──────────────────────────────┐ │
 │  │           Wallet Integration Layer                     │ │
 │  │  (StellarWalletsKit + Freighter/xBull APIs)            │ │
@@ -88,11 +94,29 @@ StellarSwap is a production-style decentralized token swap interface built on th
         └───────────────────┼──────────────────────┘
                             │
                             ▼
-                ┌───────────────────────┐
-                │  Stellar TESTNET      │
-                │  (Blockchain Network) │
-                └───────────────────────┘
+            ┌───────────────────────────┐
+            │     Stellar TESTNET       │
+            │   ┌───────────────────┐   │
+            │   │  Swap Tracker     │   │
+            │   │  Contract         │──────► record_swap()
+            │   └────────┬──────────┘   │
+            │            │ mint()       │
+            │            ▼              │
+            │   ┌───────────────────┐   │
+            │   │  Reward Token     │   │
+            │   │  Contract (SWPT)  │   │
+            │   └───────────────────┘   │
+            └───────────────────────────┘
 ```
+
+### Multi-Contract System
+
+StellarSwap uses a **two-contract architecture** demonstrating inter-contract calls on Soroban:
+
+1. **Swap Tracker Contract** — Records swap metadata, emits events, and calls the Reward Token contract
+2. **Reward Token Contract (SWPT)** — Simple ERC-20-style token minted as rewards for swapping
+
+When a user performs a swap, the Swap Tracker contract automatically calls `reward_token.mint()` to grant **10 SWPT** per swap.
 
 ### Component Structure
 
@@ -192,7 +216,14 @@ The application will start at `http://localhost:5173`
 3. View contract invocations, events, and storage
 4. Verify swap records are being stored correctly
 
-### Building & Deploying the Contract
+### Reward Token Contract (TESTNET)
+
+- **Contract Address:** `PLACEHOLDER_REWARD_TOKEN_CONTRACT_ID` *(update after deployment)*
+- **Token Symbol:** SWPT (StellarSwap Points)
+- **Reward Amount:** 10 SWPT per swap
+- **Minting:** Automatic via inter-contract call from Swap Tracker
+
+### Building & Deploying Contracts
 
 If you need to redeploy the contract:
 
@@ -209,7 +240,18 @@ stellar contract deploy \
   --network testnet \
   --source YOUR_SECRET_KEY
 
-# Update the contract ID in src/utils/constants.ts
+# Deploy reward token contract
+cd ../reward_token
+cargo build --target wasm32-unknown-unknown --release
+stellar contract deploy \
+  --wasm target/wasm32-unknown-unknown/release/reward_token.wasm \
+  --network testnet \
+  --source YOUR_SECRET_KEY
+
+# Initialize contracts (after deploying both)
+# 1. Initialize reward token with swap tracker as admin
+# 2. Initialize swap tracker with admin + reward token address
+# 3. Update contract IDs in src/utils/constants.ts
 ```
 
 ## 🧪 Testing
@@ -298,6 +340,10 @@ npm run test:ui
 ### Demo Video
 
 **Video Walkthrough:** https://youtu.be/1DVpUVUDokM
+
+### Mobile View
+
+*Mobile screenshot placeholder — capture from `http://localhost:5173` at 375px width*
 
 ---
 
