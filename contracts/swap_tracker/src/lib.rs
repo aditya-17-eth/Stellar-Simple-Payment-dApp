@@ -4,6 +4,12 @@ use soroban_sdk::{
     contract, contractimpl, contracttype, symbol_short, vec, Address, Env, String, Vec,
 };
 
+// Import the reward token contract client for cross-contract calls
+use reward_token::RewardTokenContractClient;
+
+/// Fixed reward amount per swap: 10 tokens (with 7 decimal places)
+const REWARD_AMOUNT: i128 = 10_0000000;
+
 /// Represents a single swap record stored on-chain.
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -20,6 +26,8 @@ pub struct SwapRecord {
 pub enum DataKey {
     SwapCount,
     Swap(u64),
+    Admin,
+    RewardToken,
 }
 
 #[contract]
@@ -27,7 +35,25 @@ pub struct SwapTrackerContract;
 
 #[contractimpl]
 impl SwapTrackerContract {
+    /// Initializes the swap tracker with an admin and the reward token contract address.
+    /// Must be called once before reward minting can occur.
+    ///
+    /// # Arguments
+    /// * `admin` - The admin address (authorized to manage the contract)
+    /// * `reward_token` - The deployed reward token contract address
+    pub fn initialize(env: Env, admin: Address, reward_token: Address) {
+        if env.storage().persistent().has(&DataKey::Admin) {
+            panic!("already initialized");
+        }
+        env.storage().persistent().set(&DataKey::Admin, &admin);
+        env.storage()
+            .persistent()
+            .set(&DataKey::RewardToken, &reward_token);
+    }
+
     /// Records a swap and emits a `swap_recorded` event.
+    /// If the contract is initialized with a reward token, it also mints
+    /// reward tokens to the user via an inter-contract call.
     ///
     /// # Arguments
     /// * `user` - The address of the user who performed the swap
@@ -72,8 +98,26 @@ impl SwapTrackerContract {
         // Emit a contract event for real-time listeners
         env.events().publish(
             (symbol_short!("swap"),),
-            (user, from_asset, to_asset, amount, timestamp),
+            (user.clone(), from_asset, to_asset, amount, timestamp),
         );
+
+        // --- INTER-CONTRACT CALL: Mint reward tokens ---
+        // If the contract has been initialized with a reward token address,
+        // call the reward token contract to mint tokens to the swapper.
+        if let Some(reward_token_addr) = env
+            .storage()
+            .persistent()
+            .get::<DataKey, Address>(&DataKey::RewardToken)
+        {
+            let reward_client = RewardTokenContractClient::new(&env, &reward_token_addr);
+            reward_client.mint(&user, &REWARD_AMOUNT);
+
+            // Emit reward event
+            env.events().publish(
+                (symbol_short!("reward"),),
+                (user, REWARD_AMOUNT),
+            );
+        }
     }
 
     /// Returns the most recent `count` swap records, newest first.
@@ -184,5 +228,50 @@ mod test {
         // Verify event was emitted
         let events = env.events().all();
         assert!(!events.is_empty());
+    }
+
+    #[test]
+    fn test_inter_contract_reward_minting() {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        // Deploy the reward token contract
+        let reward_token_id =
+            env.register_contract(None, reward_token::RewardTokenContract);
+        let reward_client =
+            reward_token::RewardTokenContractClient::new(&env, &reward_token_id);
+
+        // Deploy the swap tracker contract
+        let swap_tracker_id = env.register_contract(None, SwapTrackerContract);
+        let swap_client = SwapTrackerContractClient::new(&env, &swap_tracker_id);
+
+        // Initialize the reward token with the swap tracker as admin
+        // (so it can mint tokens on behalf of users)
+        reward_client.initialize(&swap_tracker_id);
+
+        // Initialize the swap tracker with admin and reward token address
+        let admin = Address::generate(&env);
+        swap_client.initialize(&admin, &reward_token_id);
+
+        let user = Address::generate(&env);
+        let xlm = String::from_str(&env, "XLM");
+        let usdc = String::from_str(&env, "USDC");
+
+        // Record a swap — should trigger reward token minting
+        swap_client.record_swap(&user, &xlm, &usdc, &1_000_000_i128, &1700000000_u64);
+
+        // Verify the user received reward tokens (10 tokens = 10_0000000)
+        let reward_balance = reward_client.balance_of(&user);
+        assert_eq!(reward_balance, 10_0000000);
+
+        // Record another swap
+        swap_client.record_swap(&user, &usdc, &xlm, &500_000_i128, &1700001000_u64);
+
+        // Should accumulate: 20 tokens total
+        let reward_balance_2 = reward_client.balance_of(&user);
+        assert_eq!(reward_balance_2, 20_0000000);
+
+        // Swap count should still be correct
+        assert_eq!(swap_client.get_swap_count(), 2);
     }
 }
