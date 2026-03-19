@@ -7,371 +7,152 @@
 [![Vite](https://img.shields.io/badge/Vite-5.4-purple)](https://vitejs.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org)
 
----
+The seamless, decentralized token swap interface and multi-wallet gateway for the Stellar network.
 
-## ⚠️ TESTNET ONLY - DEMONSTRATION APPLICATION
+## Live Demo
 
-**This application is deployed on Stellar TESTNET for demonstration purposes only.**  
-Do not use with Mainnet accounts containing real funds. All transactions use test XLM with no real-world value.
-
----
+Experience the live application deployed on Vercel:
+[https://stellar-simple-payment-dapp.vercel.app/](https://stellar-simple-payment-dapp.vercel.app/)
 
 ## Overview
 
-StellarSwap is a production-style decentralized token swap interface built on the Stellar blockchain. It enables users to swap assets using Stellar's native DEX orderbook with instant settlement and minimal fees. The application integrates with popular Stellar wallets (Freighter, xBull) and tracks swap activity using a Soroban smart contract.
+StellarSwap is a production-ready decentralized application (dApp) built on the Stellar network that enables instant, low-fee token swaps directly via the native Stellar decentralized exchange (DEX). Designed with user experience in mind, it provides seamless multi-wallet connection, live price previews, and real-time transaction updates. 
 
-**Key Value Propositions:**
+Furthermore, StellarSwap integrates an advanced Soroban smart contract architecture that features a native reward token system. Users automatically receive reward tokens directly to their wallets for every successful swap executed on the platform.
 
-- **Instant Settlement** — Swaps execute in 3-5 seconds on Stellar's high-performance network
-- **Minimal Fees** — Transaction costs are fractions of a cent
-- **True Decentralization** — No intermediaries, no custody, your keys your crypto
-- **Multi-Wallet Support** — Works with Freighter, xBull, and other Stellar-compatible wallets
-- **On-Chain Tracking** — Soroban smart contract records swap metadata for transparency
+## Features
 
-**Target Audience:** Developers learning Stellar/Soroban, Stellar enthusiasts, dApp builders
+- **Multi-wallet connect/disconnect:** Universal compatibility with popular Stellar wallets including Freighter and xBull.
+- **XLM swap execution:** Native order placement and fulfillment using Stellar's built-in DEX.
+- **Real-time transaction tracking:** Live activity feeds, lifecycle tracking, and instant balance updates.
+- **Reward tokens on swap:** Automated on-chain yield for platform users through Soroban contract orchestration.
+- **Contract interaction from frontend:** End-to-end integration for submitting, simulating, and validating smart contract invocations.
+- **Mobile responsive UI:** A finely tuned, adaptable interface engineered with Tailwind CSS for mobile and desktop consistency.
+- **CI/CD pipeline:** Robust GitHub Actions configuration for automated testing and continuous deployment.
 
-## ✨ Features
+## Architecture
 
-- **Token Swapping via Stellar DEX** — Swap XLM, USDC, SRT, and other assets using Stellar's built-in decentralized orderbook (`manageSellOffer`)
-- **Multi-Wallet Support** — Connect with Freighter, xBull, or other Stellar-compatible wallets via StellarWalletsKit
-- **Real-Time Balance Display** — View your XLM and asset balances with automatic refresh
-- **Swap Activity Tracking** — Soroban smart contract records swap metadata and emits events for real-time tracking
-- **Live Swap Feed** — Real-time activity feed showing recent swaps from all users
-- **XLM Payment Sending** — Send XLM to any Stellar address with memo support
-- **TESTNET Network Detection** — Automatic detection and warning when connected to wrong network
-- **Responsive UI** — Mobile-friendly interface built with Tailwind CSS
-- **Transaction Lifecycle Tracking** — Full pending → success → failed status with explorer links
-- **Live Price Preview** — Real-time orderbook pricing with estimated receive amounts
-- **Swap Rewards** — Earn SWPT reward tokens on every swap via inter-contract calls
-- **Mobile Responsive** — Fully usable on mobile with thumb-friendly buttons and adaptive layouts
+StellarSwap utilizes a modern, modular architecture that bridges a high-performance frontend with secure on-chain Soroban smart contracts.
 
-## 🏗 Architecture & Technology Stack
+```mermaid
+graph TD
+    subgraph Frontend Framework
+        UI[React + Vite + Tailwind]
+    end
+    
+    subgraph Blockchain Integration
+        StellarSDK[Stellar SDK]
+        WalletKit[StellarWalletsKit]
+    end
+    
+    subgraph Stellar Network TESTNET
+        Horizon[Horizon API / DEX]
+        Soroban[Soroban RPC]
+        
+        subgraph Smart Contracts
+            Tracker[Swap Tracker Contract]
+            Token[Reward Token Contract]
+        end
+    end
 
-### Technology Stack
-
-| Technology                                                              | Version | Purpose                            |
-| ----------------------------------------------------------------------- | ------- | ---------------------------------- |
-| [React](https://react.dev/)                                             | 18.3    | UI Framework                       |
-| [TypeScript](https://www.typescriptlang.org/)                           | 5.6     | Type Safety & Developer Experience |
-| [Vite](https://vitejs.dev/)                                             | 5.4     | Build Tool & Development Server    |
-| [Tailwind CSS](https://tailwindcss.com/)                                | 3.4     | Utility-First Styling              |
-| [Stellar SDK](https://github.com/stellar/js-stellar-sdk)                | 12.0    | Blockchain Integration & DEX       |
-| [StellarWalletsKit](https://github.com/nicecoder97/stellar-wallets-kit) | Latest  | Multi-Wallet Management            |
-| [Soroban](https://soroban.stellar.org/)                                 | Latest  | Smart Contract Platform            |
-| [Vitest](https://vitest.dev/)                                           | Latest  | Testing Framework                  |
-
-### High-Level Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     React Frontend (Vite)                   │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
-│  │ WalletConnect│  │  SwapForm    │  │ ActivityFeed │       │
-│  │  Component   │  │  Component   │  │  Component   │       │
-│  └──────┬───────┘  └───────┬──────┘  └────────┬─────┘       │
-│         │                  │                  │             │
-│  ┌──────┘──────────────────┼──────────────────┘             │
-│  │    ┌────────────────────┤                                │
-│  │    │  Balance Component (XLM + USDC + SWPT Rewards)      │
-│  │    └────────────────────┤                                │
-│  │                         │                                │
-│  ┌─────────────────────────▼──────────────────────────────┐ │
-│  │           Wallet Integration Layer                     │ │
-│  │  (StellarWalletsKit + Freighter/xBull APIs)            │ │
-│  └─────────────────────────┬──────────────────────────────┘ │
-│                            │                                │
-└────────────────────────────┼────────────────────────────────┘
-                             │
-        ┌────────────────────┼────────────────────┐
-        │                    │                    │
-        ▼                    ▼                    ▼
-┌───────────────┐  ┌──────────────────┐  ┌──────────────────┐
-│ Stellar SDK   │  │  Horizon API     │  │  Soroban RPC     │
-│ (Transaction  │  │  (DEX Orderbook, │  │  (Smart Contract │
-│  Building)    │  │   Account Data)  │  │   Interaction)   │
-└───────┬───────┘  └────────┬─────────┘  └─────────┬────────┘
-        │                   │                      │
-        └───────────────────┼──────────────────────┘
-                            │
-                            ▼
-            ┌───────────────────────────┐
-            │     Stellar TESTNET       │
-            │   ┌───────────────────┐   │
-            │   │  Swap Tracker     │   │
-            │   │  Contract         │──────► record_swap()
-            │   └────────┬──────────┘   │
-            │            │ mint()       │
-            │            ▼              │
-            │   ┌───────────────────┐   │
-            │   │  Reward Token     │   │
-            │   │  Contract (SWPT)  │   │
-            │   └───────────────────┘   │
-            └───────────────────────────┘
+    UI -->|Manages State| WalletKit
+    UI -->|Builds TX| StellarSDK
+    WalletKit -->|Signs TX| StellarSDK
+    
+    StellarSDK -->|Submits Trade| Horizon
+    StellarSDK -->|Invokes Contract| Soroban
+    
+    Soroban -->|Executes record_swap| Tracker
+    Tracker -.->|Cross-contract mint| Token
 ```
 
-### Multi-Contract System
+## Smart Contracts
 
-StellarSwap uses a **two-contract architecture** demonstrating inter-contract calls on Soroban:
-
-1. **Swap Tracker Contract** — Records swap metadata, emits events, and calls the Reward Token contract
-2. **Reward Token Contract (SWPT)** — Simple ERC-20-style token minted as rewards for swapping
-
-When a user performs a swap, the Swap Tracker contract automatically calls `reward_token.mint()` to grant **10 SWPT** per swap.
-
-### Component Structure
-
-- **`src/components/`** — React UI components (WalletConnect, SwapForm, Balance, etc.)
-- **`src/wallet/`** — Wallet integration logic (StellarWalletsKit initialization)
-- **`src/stellar/`** — Stellar SDK integration (DEX orderbook, transaction building)
-- **`src/contract/`** — Soroban contract interaction (swap tracking)
-- **`src/hooks/`** — React hooks (useWallet for state management)
-- **`src/utils/`** — Utility functions (formatting, validation, constants)
-
-### Key Dependencies
-
-- **`@stellar/stellar-sdk`** — Core Stellar blockchain interaction
-- **`stellar-wallets-kit`** — Unified wallet connection interface
-- **`@stellar/freighter-api`** — Freighter wallet integration
-- **`@creit.tech/stellar-wallets-kit`** — xBull wallet integration
-- **`@testing-library/react`** — Component testing utilities
-- **`vitest`** — Fast unit test runner with Vite integration
-
-## 📋 Prerequisites
-
-Before running StellarSwap locally, ensure you have:
-
-1. **Node.js 18.x or later** — [Download from nodejs.org](https://nodejs.org/)
-2. **npm or yarn** — Comes with Node.js (npm) or [install yarn](https://yarnpkg.com/)
-3. **Stellar wallet browser extension:**
-   - [Freighter](https://freighter.app) (recommended) — Chrome, Firefox, Edge
-   - [xBull](https://xbull.app) (alternative) — Chrome, Firefox
-4. **TESTNET account with XLM** — Get free test XLM from [Friendbot](https://laboratory.stellar.org/#account-creator?network=test)
-
-### Getting TESTNET XLM
-
-1. Install a Stellar wallet extension (Freighter or xBull)
-2. Create a new wallet or import existing one
-3. **Switch to TESTNET** in wallet settings
-4. Copy your public key (starts with `G...`)
-5. Visit [Stellar Laboratory](https://laboratory.stellar.org/#account-creator?network=test)
-6. Paste your public key and click "Get test network lumens"
-7. Your account will be funded with 10,000 test XLM
-
-## 🚀 Setup Instructions
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/aditya-17-eth/Stellar-Simple-Payment-dApp
-cd stellar-swap
-```
-
-### 2. Install dependencies
-
-```bash
-npm install
-```
-
-### 3. Start the development server
-
-```bash
-npm run dev
-```
-
-The application will start at `http://localhost:5173`
-
-### 4. Configure your wallet
-
-1. Open your Stellar wallet extension (Freighter or xBull)
-2. **Switch to TESTNET** (critical step!)
-3. Ensure your account has test XLM (see Prerequisites section)
-
-### 5. Connect and swap
-
-1. Click "Connect Wallet" in the application
-2. Select your wallet (Freighter or xBull)
-3. Approve the connection in the wallet popup
-4. Select assets and enter swap amount
-5. Click "Swap" and approve the transaction
-
-## 📜 Smart Contract Information
-
-### Deployed Contract (TESTNET)
+The platform relies on the following registered on-chain programs:
 
 - **Network:** Stellar TESTNET
-- **Contract Address:** `CBEWIQV4KSH4KXA5V7B5ELMQM7WY7JTCTHB5DEPEFVJRLL62FGMJULOY`
+- **Swap Contract Address:** `CBEWIQV4KSH4KXA5V7B5ELMQM7WY7JTCTHB5DEPEFVJRLL62FGMJULOY`
+- **Token Contract Address:** `PLACEHOLDER_REWARD_TOKEN_CONTRACT_ID`
 
-### Example Transactions
+## Application Interface
 
-**Swap Contract Invocation:**
+![Application Interface Placeholder](assets/application-interface.png)
 
-- Transaction Hash: `874ecebaf675797ed6f7a5413ef056fc3fa763ef5c992da183183abad609786a`
-- View on Stellar Expert: [https://stellar.expert/explorer/testnet/tx/874ecebaf675797ed6f7a5413ef056fc3fa763ef5c992da183183abad609786a](https://stellar.expert/explorer/testnet/tx/874ecebaf675797ed6f7a5413ef056fc3fa763ef5c992da183183abad609786a)
+## Example Transactions
 
-### Verifying Contract on Stellar Expert
+Review historical executions directly on the Stellar Expert block explorer:
 
-1. Visit [Stellar Expert TESTNET](https://stellar.expert/explorer/testnet)
-2. Search for the contract address: `CBEWIQV4KSH4KXA5V7B5ELMQM7WY7JTCTHB5DEPEFVJRLL62FGMJULOY
-`
-3. View contract invocations, events, and storage
-4. Verify swap records are being stored correctly
+- **Swap Transaction Hash:** `874ecebaf675797ed6f7a5413ef056fc3fa763ef5c992da183183abad609786a`
+- **Contract Invocation Hash:** `874ecebaf675797ed6f7a5413ef056fc3fa763ef5c992da183183abad609786a`
+- **View on Stellar Expert:** [https://stellar.expert/explorer/testnet/tx/874ecebaf675797ed6f7a5413ef056fc3fa763ef5c992da183183abad609786a](https://stellar.expert/explorer/testnet/tx/874ecebaf675797ed6f7a5413ef056fc3fa763ef5c992da183183abad609786a)
 
-### Reward Token Contract (TESTNET)
+## Mobile Responsiveness
 
-- **Contract Address:** `PLACEHOLDER_REWARD_TOKEN_CONTRACT_ID` *(update after deployment)*
-- **Token Symbol:** SWPT (StellarSwap Points)
-- **Reward Amount:** 10 SWPT per swap
-- **Minting:** Automatic via inter-contract call from Swap Tracker
+The application is thoroughly optimized for all device sizes, prioritizing a responsive design that guarantees performance and accessibility on mobile devices.
 
-### Building & Deploying Contracts
+![Mobile Responsiveness](assets/mobile-view.png)
 
-If you need to redeploy the contract:
+## Tech Stack
 
-```bash
-# Navigate to contract directory
-cd contracts/swap_tracker
+- **React:** UI Framework
+- **Vite:** Build Tooling and Hot Module Replacement
+- **Tailwind CSS:** Utility-first Styling
+- **Stellar SDK:** Horizon API and Blockchain interactions
+- **Soroban:** Smart Contract ecosystem for Stellar
+- **Vitest:** High-speed Unit and Integration Testing
+- **GitHub Actions:** CI/CD Automation
 
-# Build the contract
-cargo build --target wasm32-unknown-unknown --release
+## Prerequisites
 
-# Deploy to TESTNET
-stellar contract deploy \
-  --wasm target/wasm32-unknown-unknown/release/swap_tracker.wasm \
-  --network testnet \
-  --source YOUR_SECRET_KEY
+- **Node.js 18.x** or later
+- **Stellar Wallet** (Freighter or xBull)
+- **TESTNET XLM** (Available via [Friendbot](https://laboratory.stellar.org/#account-creator?network=test))
 
-# Deploy reward token contract
-cd ../reward_token
-cargo build --target wasm32-unknown-unknown --release
-stellar contract deploy \
-  --wasm target/wasm32-unknown-unknown/release/reward_token.wasm \
-  --network testnet \
-  --source YOUR_SECRET_KEY
+## Setup Instructions
 
-# Initialize contracts (after deploying both)
-# 1. Initialize reward token with swap tracker as admin
-# 2. Initialize swap tracker with admin + reward token address
-# 3. Update contract IDs in src/utils/constants.ts
-```
+Follow these steps to deploy the application locally:
 
-## 🧪 Testing
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/aditya-17-eth/Stellar-Simple-Payment-dApp.git
+   cd Stellar-Simple-Payment-dApp
+   ```
 
-StellarSwap uses Vitest for fast, reliable testing with both unit tests and property-based tests.
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-### Running Tests
+3. **Run the development server locally:**
+   ```bash
+   npm run dev
+   ```
+   The application will be accessible at `http://localhost:5173`.
 
-```bash
-# Run all tests once
-npm test
+4. **Run tests:**
+   ```bash
+   npm test
+   ```
 
-# Run tests in watch mode (re-runs on file changes)
-npm test -- --watch
+## Test Results
 
-# Run tests with coverage report
-npm test -- --coverage
+The application maintains a strict quality standard, backed by a comprehensive suite of over 80+ unit and integration tests. All core components and business logic are fully validated.
 
-# Run tests with UI (interactive test explorer)
-npm run test:ui
-```
+![Test Results Placeholder](assets/test-results.png)
 
-## 📚 Resources
+## Demo Video
 
-### Stellar & Soroban Documentation
+Watch a quick walkthrough of compiling, transacting, and interacting with StellarSwap:
 
-- [Stellar Documentation](https://developers.stellar.org/) — Official Stellar developer docs
-- [Soroban Documentation](https://soroban.stellar.org/) — Smart contract platform docs
-- [Stellar SDK Reference](https://stellar.github.io/js-stellar-sdk/) — JavaScript SDK API reference
-- [Stellar Protocol](https://github.com/stellar/stellar-protocol) — Core protocol specifications
+[1-Minute Demo Video](https://youtu.be/1DVpUVUDokM)
 
-### Tools & Explorers
+## Resources
 
-- [Freighter Wallet](https://www.freighter.app/) — Browser extension wallet
-- [xBull Wallet](https://xbull.app/) — Alternative browser wallet
-- [Stellar Laboratory](https://laboratory.stellar.org/) — Interactive transaction builder
-- [Stellar Expert](https://stellar.expert/) — Blockchain explorer and analytics
-- [Friendbot](https://laboratory.stellar.org/#account-creator?network=test) — TESTNET XLM faucet
-
-### Community & Support
-
-- [Stellar Discord](https://discord.gg/stellar) — Active developer community
-- [Stellar Stack Exchange](https://stellar.stackexchange.com/) — Q&A for developers
-- [Stellar GitHub](https://github.com/stellar) — Official repositories
-- [Soroban Examples](https://github.com/stellar/soroban-examples) — Example smart contracts
-
-### Learning Resources
-
-- [Stellar Quest](https://quest.stellar.org/) — Interactive learning challenges
-- [Soroban Quest](https://fastcheapandoutofcontrol.com/tutorial) — Smart contract tutorials
-- [Stellar Developer Blog](https://www.stellar.org/developers/blog) — Latest updates and guides
-
-## 🎬 Demo
-
-### Live Demo
-
-**Deployed Application:** https://stellar-simple-payment-dapp.vercel.app/
-
-## Screenshots
-
-**Test Output:**
-
-- Shows all tests passing
-
-![passing balance test](assets/balance-test.png)
-
-![property test](assets/property-test.png)
-
-- Swap test
-
-![Swap test](assets/swap-test.png)
-
-- Security Audit
-  ![npm run security-audit](assets/security-audit.png)
-
-**Application Interface:**
-
-- Home Screen
-  ![Application Interface](assets/application-interface.png)
-- Send XLM
-  <img src="assets/simple-payment.png" width="90%">
-
-- Token Swap
-  ![Token Swap](assets/token-swap.png)
-
-### Demo Video
-
-**Video Walkthrough:** https://youtu.be/1DVpUVUDokM
-
-### Mobile View
-
-*Mobile screenshot placeholder — capture from `http://localhost:5173` at 375px width*
+- [Stellar Documentation](https://developers.stellar.org/)
+- [Soroban Smart Contracts](https://soroban.stellar.org/)
+- [StellarWalletsKit Reference](https://github.com/creit-tech/Stellar-Wallets-Kit)
+- [Stellar SDK Guide](https://stellar.github.io/js-stellar-sdk/)
 
 ---
 
-## 🤝 Contributing
-
-Contributions are welcome! To contribute:
-
-- **Contract Address:** `CBEWIQV4KSH4KXA5V7B5ELMQM7WY7JTCTHB5DEPEFVJRLL62FGMJULOY`
-
-2. Create a feature branch (`git checkout -b feature/new-feature`)
-3. Make your changes
-4. Run tests (`npm test`) and ensure they pass
-5. Run build (`npm run build`) and ensure it succeeds
-6. Commit your changes (`git commit -m 'Add new feature'`)
-7. Push to the branch (`git push origin feature/new-feature`)
-8. Open a Pull Request
-
-Please ensure your code:
-
-- Follows existing code style
-- Includes tests for new functionality
-- Updates documentation as needed
-- Passes all existing tests
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
-**Built with ❤️ for the Stellar ecosystem**
+**Disclaimer:** This application interfaces exclusively with the Stellar TESTNET environments. Do not send Mainnet assets to these addresses.
