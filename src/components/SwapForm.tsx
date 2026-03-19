@@ -56,7 +56,16 @@ export const SwapForm: React.FC<SwapFormProps> = ({
         estimateSwapReceive(selling, buying, amount),
       ]);
 
-      setBestPrice(orderbook.bestBidPrice);
+      // Calculate effective price taking AMMs into account
+      const parsedAmount = parseFloat(amount);
+      const parsedEstimate = parseFloat(estimate);
+      
+      let effectivePrice = orderbook.bestBidPrice;
+      if (parsedAmount > 0 && parsedEstimate > 0) {
+        effectivePrice = (parsedEstimate / parsedAmount).toFixed(6);
+      }
+
+      setBestPrice(effectivePrice || orderbook.bestBidPrice);
       setEstimatedReceive(estimate);
     } catch (err) {
       console.error('Price fetch error:', err);

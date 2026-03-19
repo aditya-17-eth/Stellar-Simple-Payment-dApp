@@ -603,7 +603,7 @@ describe('SwapForm', () => {
 
     it('shows error when no liquidity is available', async () => {
       const user = userEvent.setup();
-      const { fetchOrderbook } = await import('../../stellar/dex');
+      const { fetchOrderbook, estimateSwapReceive } = await import('../../stellar/dex');
       
       vi.mocked(fetchOrderbook).mockResolvedValue({
         bestAskPrice: '0',
@@ -612,6 +612,7 @@ describe('SwapForm', () => {
         bidDepth: 0,
         estimatedReceive: '0',
       });
+      vi.mocked(estimateSwapReceive).mockResolvedValue('0');
 
       render(<SwapForm {...defaultProps} />);
 

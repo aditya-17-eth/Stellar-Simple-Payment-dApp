@@ -63,6 +63,17 @@ export async function estimateSwapReceive(
   const selling = toStellarAsset(sellingAsset);
   const buying = toStellarAsset(buyingAsset);
 
+  try {
+    // strictSendPaths checks both AMMs and the CLOB to find the absolute best route.
+    const paths = await server.strictSendPaths(selling, sellAmount, [buying]).call();
+    if (paths.records.length > 0) {
+      return parseFloat(paths.records[0].destination_amount).toFixed(7);
+    }
+  } catch (err) {
+    console.warn('strictSendPaths failed, falling back to orderbook', err);
+  }
+
+  // Fallback to orderbook if path finding fails
   const orderbook = await server
     .orderbook(selling, buying)
     .limit(50)
