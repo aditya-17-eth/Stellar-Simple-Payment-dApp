@@ -20,6 +20,7 @@ Do not use with Mainnet accounts containing real funds. All transactions use tes
 StellarSwap is a production-style decentralized token swap interface built on the Stellar blockchain. It enables users to swap assets using Stellar's native DEX orderbook with instant settlement and minimal fees. The application integrates with popular Stellar wallets (Freighter, xBull) and tracks swap activity using a Soroban smart contract.
 
 **Key Value Propositions:**
+
 - **Instant Settlement** — Swaps execute in 3-5 seconds on Stellar's high-performance network
 - **Minimal Fees** — Transaction costs are fractions of a cent
 - **True Decentralization** — No intermediaries, no custody, your keys your crypto
@@ -45,16 +46,16 @@ StellarSwap is a production-style decentralized token swap interface built on th
 
 ### Technology Stack
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| [React](https://react.dev/) | 18.3 | UI Framework |
-| [TypeScript](https://www.typescriptlang.org/) | 5.6 | Type Safety & Developer Experience |
-| [Vite](https://vitejs.dev/) | 5.4 | Build Tool & Development Server |
-| [Tailwind CSS](https://tailwindcss.com/) | 3.4 | Utility-First Styling |
-| [Stellar SDK](https://github.com/stellar/js-stellar-sdk) | 12.0 | Blockchain Integration & DEX |
-| [StellarWalletsKit](https://github.com/nicecoder97/stellar-wallets-kit) | Latest | Multi-Wallet Management |
-| [Soroban](https://soroban.stellar.org/) | Latest | Smart Contract Platform |
-| [Vitest](https://vitest.dev/) | Latest | Testing Framework |
+| Technology                                                              | Version | Purpose                            |
+| ----------------------------------------------------------------------- | ------- | ---------------------------------- |
+| [React](https://react.dev/)                                             | 18.3    | UI Framework                       |
+| [TypeScript](https://www.typescriptlang.org/)                           | 5.6     | Type Safety & Developer Experience |
+| [Vite](https://vitejs.dev/)                                             | 5.4     | Build Tool & Development Server    |
+| [Tailwind CSS](https://tailwindcss.com/)                                | 3.4     | Utility-First Styling              |
+| [Stellar SDK](https://github.com/stellar/js-stellar-sdk)                | 12.0    | Blockchain Integration & DEX       |
+| [StellarWalletsKit](https://github.com/nicecoder97/stellar-wallets-kit) | Latest  | Multi-Wallet Management            |
+| [Soroban](https://soroban.stellar.org/)                                 | Latest  | Smart Contract Platform            |
+| [Vitest](https://vitest.dev/)                                           | Latest  | Testing Framework                  |
 
 ### High-Level Architecture
 
@@ -174,22 +175,12 @@ The application will start at `http://localhost:5173`
 ### Deployed Contract (TESTNET)
 
 - **Network:** Stellar TESTNET
-- **Contract Address:** `CBEWIQV4KSH4KXA5V7B5ELMQM7WY7JTCTHB5DEPEFVJRLL62FGMJULOY
-`  
-
-### Contract Functions
-
-The Swap Tracker contract provides the following functions:
-
-| Function | Parameters | Description |
-|----------|------------|-------------|
-| `record_swap` | `user: Address, from_asset: String, to_asset: String, amount: String, timestamp: u64` | Records a swap event on-chain and emits an event |
-| `get_recent_swaps` | `count: u32` | Returns the last N swap records |
-| `get_swap_count` | None | Returns the total number of recorded swaps |
+- **Contract Address:** `CBEWIQV4KSH4KXA5V7B5ELMQM7WY7JTCTHB5DEPEFVJRLL62FGMJULOY`
 
 ### Example Transactions
 
 **Swap Contract Invocation:**
+
 - Transaction Hash: `874ecebaf675797ed6f7a5413ef056fc3fa763ef5c992da183183abad609786a`
 - View on Stellar Expert: [https://stellar.expert/explorer/testnet/tx/874ecebaf675797ed6f7a5413ef056fc3fa763ef5c992da183183abad609786a](https://stellar.expert/explorer/testnet/tx/874ecebaf675797ed6f7a5413ef056fc3fa763ef5c992da183183abad609786a)
 
@@ -277,7 +268,6 @@ npm run test:ui
 
 **Deployed Application:** https://stellar-simple-payment-dapp.vercel.app/
 
-
 ## Screenshots
 
 **Test Output:**
@@ -287,34 +277,36 @@ npm run test:ui
 ![passing balance test](assets/balance-test.png)
 
 ![property test](assets/property-test.png)
+
 - Swap test
 
 ![Swap test](assets/swap-test.png)
 
 - Security Audit
-![npm run security-audit](assets/security-audit.png)
-
+  ![npm run security-audit](assets/security-audit.png)
 
 **Application Interface:**
+
 - Home Screen
-![Application Interface](assets/application-interface.png)
+  ![Application Interface](assets/application-interface.png)
 - Send XLM
-<img src="assets/simple-payment.png" width="90%">
+  <img src="assets/simple-payment.png" width="90%">
 
 - Token Swap
-![Token Swap](assets/token-swap.png)
+  ![Token Swap](assets/token-swap.png)
 
 ### Demo Video
 
 **Video Walkthrough:** https://youtu.be/1DVpUVUDokM
-
 
 ---
 
 ## 🤝 Contributing
 
 Contributions are welcome! To contribute:
+
 - **Contract Address:** `CBEWIQV4KSH4KXA5V7B5ELMQM7WY7JTCTHB5DEPEFVJRLL62FGMJULOY`
+
 2. Create a feature branch (`git checkout -b feature/new-feature`)
 3. Make your changes
 4. Run tests (`npm test`) and ensure they pass
@@ -324,6 +316,7 @@ Contributions are welcome! To contribute:
 8. Open a Pull Request
 
 Please ensure your code:
+
 - Follows existing code style
 - Includes tests for new functionality
 - Updates documentation as needed
@@ -336,4 +329,3 @@ This project is open source and available under the [MIT License](LICENSE).
 ---
 
 **Built with ❤️ for the Stellar ecosystem**
-
