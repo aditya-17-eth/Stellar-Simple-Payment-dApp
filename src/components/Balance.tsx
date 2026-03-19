@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { fetchBalance, fetchTokenBalance } from '../utils/stellar';
 import { SUPPORTED_ASSETS } from '../utils/constants';
+import { getRewardBalance } from '../contract/rewardTokenClient';
 
 interface BalanceProps {
   publicKey: string;
@@ -13,6 +14,7 @@ const usdcAsset = SUPPORTED_ASSETS.find((a) => a.code === 'USDC');
 export const Balance: React.FC<BalanceProps> = ({ publicKey, refreshTrigger = 0 }) => {
   const [xlmBalance, setXlmBalance] = useState<string | null>(null);
   const [usdcBalance, setUsdcBalance] = useState<string | null>(null);
+  const [rewardBalance, setRewardBalance] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,10 +27,12 @@ export const Balance: React.FC<BalanceProps> = ({ publicKey, refreshTrigger = 0 
       const usdcPromise = usdcAsset?.issuer
         ? fetchTokenBalance(publicKey, usdcAsset.code, usdcAsset.issuer)
         : Promise.resolve('0');
+      const rewardPromise = getRewardBalance(publicKey);
 
-      const [xlm, usdc] = await Promise.all([xlmPromise, usdcPromise]);
+      const [xlm, usdc, reward] = await Promise.all([xlmPromise, usdcPromise, rewardPromise]);
       setXlmBalance(xlm);
       setUsdcBalance(usdc);
+      setRewardBalance(reward);
     } catch (err) {
       console.error('Error fetching balances:', err);
       setError('Failed to fetch balances');
@@ -79,6 +83,10 @@ export const Balance: React.FC<BalanceProps> = ({ publicKey, refreshTrigger = 0 
     ? parseFloat(usdcBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 7 })
     : '0';
 
+  const fmtReward = rewardBalance
+    ? parseFloat(rewardBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : '0';
+
   const hasNoTrustline = usdcBalance === '0' && usdcAsset?.issuer;
 
   return (
@@ -97,8 +105,8 @@ export const Balance: React.FC<BalanceProps> = ({ publicKey, refreshTrigger = 0 
         </button>
       </div>
 
-      {/* Balance cards */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Balance cards — responsive grid: 1 col on mobile, 2 on sm, 3 on lg */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* XLM Balance */}
         <div className="bg-black/20 border border-white/5 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
@@ -121,6 +129,21 @@ export const Balance: React.FC<BalanceProps> = ({ publicKey, refreshTrigger = 0 
           </div>
           <p className="text-2xl font-bold text-white">{fmtUsdc}</p>
           <p className="text-gray-500 text-xs mt-1">USD Coin</p>
+        </div>
+
+        {/* Reward Token Balance (SWPT) */}
+        <div className="bg-black/20 border border-amber-500/10 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-7 h-7 bg-amber-500/20 rounded-full flex items-center justify-center">
+              <span className="text-amber-400 font-bold text-xs">★</span>
+            </div>
+            <span className="text-gray-400 text-sm">SWPT</span>
+            <span className="text-xs px-1.5 py-0.5 bg-amber-500/10 text-amber-400 rounded-full ml-auto">
+              Rewards
+            </span>
+          </div>
+          <p className="text-2xl font-bold text-white">{fmtReward}</p>
+          <p className="text-gray-500 text-xs mt-1">Earned by swapping tokens</p>
         </div>
       </div>
 

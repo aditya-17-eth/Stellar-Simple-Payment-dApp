@@ -113,7 +113,7 @@ function App() {
 
         {/* Header */}
         <header className="border-b border-white/10 backdrop-blur-sm">
-          <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="max-w-5xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-stellar-blue to-stellar-purple rounded-xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -136,14 +136,14 @@ function App() {
         </header>
 
         {/* Main content */}
-        <main className="max-w-5xl mx-auto px-4 py-12">
+        <main className="max-w-5xl mx-auto px-4 py-6 sm:py-12">
           {/* Hero when not connected */}
           {!isConnected && (
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold text-white mb-4">
+            <div className="text-center mb-8 sm:mb-12">
+              <h2 className="text-2xl sm:text-4xl font-bold text-white mb-4">
                 Swap Tokens on Stellar
               </h2>
-              <p className="text-gray-400 text-lg max-w-lg mx-auto">
+              <p className="text-gray-400 text-base sm:text-lg max-w-lg mx-auto">
                 Connect your wallet to swap assets using Stellar's native DEX orderbook.
                 Fast, secure, and with zero intermediaries.
               </p>
@@ -176,10 +176,10 @@ function App() {
               </section>
 
               {/* Tab navigation */}
-              <div className="flex gap-1 p-1 bg-white/5 rounded-xl w-fit">
+              <div className="flex gap-1 p-1 bg-white/5 rounded-xl w-full sm:w-fit">
                 <button
                   onClick={() => setActiveTab('swap')}
-                  className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     activeTab === 'swap'
                       ? 'bg-gradient-to-r from-stellar-blue to-stellar-purple text-white shadow-lg'
                       : 'text-gray-400 hover:text-white'
@@ -189,7 +189,7 @@ function App() {
                 </button>
                 <button
                   onClick={() => setActiveTab('send')}
-                  className={`px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-sm font-medium transition-all ${
                     activeTab === 'send'
                       ? 'bg-gradient-to-r from-stellar-blue to-stellar-purple text-white shadow-lg'
                       : 'text-gray-400 hover:text-white'
