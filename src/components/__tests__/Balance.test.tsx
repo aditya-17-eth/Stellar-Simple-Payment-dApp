@@ -117,8 +117,16 @@ describe('Balance', () => {
       await waitFor(() => {
         // Check that the balance contains the digits and decimal (locale-specific formatting)
         // The actual format depends on the system locale
-        const xlmBalance = screen.getByText(/10[,\s]*00[,\s]*000\.50/);
-        const usdcBalance = screen.getByText(/9[,\s]*99[,\s]*999\.99/);
+        const xlmBalance = screen.getByText((content) =>
+          content.includes("1000000.50") ||
+          content.includes("1,000,000.50") ||
+          content.includes("10,00,000.50")
+        );
+        const usdcBalance = screen.getByText((content) =>
+          content.includes("999999.99") ||
+          content.includes("999,999.99") ||
+          content.includes("9,99,999.99")
+        );
         expect(xlmBalance).toBeInTheDocument();
         expect(usdcBalance).toBeInTheDocument();
       });
