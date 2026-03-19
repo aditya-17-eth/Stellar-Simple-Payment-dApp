@@ -1,43 +1,14 @@
-import { afterEach } from "vitest";
+// Vitest 4.x: Do NOT import from "vitest" in setupFiles!
+// Vitest injects globals (afterEach, expect, etc.) when globals: true.
 import { cleanup } from "@testing-library/react";
-import "@testing-library/jest-dom";
+import * as matchers from "@testing-library/jest-dom/matchers";
 
-// Cleanup after each test
+// Extend vitest's expect with jest-dom matchers (expect is available globally)
+// @ts-expect-error - expect is injected by vitest globals
+expect.extend(matchers);
+
+// Cleanup after each test (afterEach is available globally via vitest)
+// @ts-expect-error - afterEach is injected by vitest globals
 afterEach(() => {
   cleanup();
 });
-
-// Mock localStorage
-const localStorageMock = {
-  getItem: (key: string): string | null => {
-    return localStorageMock.store[key] || null;
-  },
-  setItem: (key: string, value: string): void => {
-    localStorageMock.store[key] = value;
-  },
-  removeItem: (key: string): void => {
-    delete localStorageMock.store[key];
-  },
-  clear: (): void => {
-    localStorageMock.store = {};
-  },
-  key: (index: number): string | null => {
-    const keys = Object.keys(localStorageMock.store);
-    return keys[index] || null;
-  },
-  get length(): number {
-    return Object.keys(localStorageMock.store).length;
-  },
-  store: {} as Record<string, string>,
-};
-
-(globalThis as any).localStorage = localStorageMock;
-
-// Mock fetch for deterministic tests
-(globalThis as any).fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-  console.warn("Unmocked fetch call:", input, init);
-  return new Response(JSON.stringify({ error: "Unmocked fetch call" }), {
-    status: 500,
-    headers: { "Content-Type": "application/json" },
-  });
-};

@@ -17,6 +17,13 @@ export const FRIENDBOT_URL = 'https://friendbot.stellar.org';
 // Update this after contract deployment
 export const SWAP_TRACKER_CONTRACT_ID = 'CBEWIQV4KSH4KXA5V7B5ELMQM7WY7JTCTHB5DEPEFVJRLL62FGMJULOY';
 
+// Deployed reward token contract address (TESTNET)
+// Update this after deploying the reward_token contract
+export const REWARD_TOKEN_CONTRACT_ID = 'PLACEHOLDER_REWARD_TOKEN_CONTRACT_ID';
+
+// Number of reward tokens minted per swap (display value, 7 decimals on-chain)
+export const REWARD_PER_SWAP = 10;
+
 // Supported assets for token swaps
 export interface AssetConfig {
   code: string;
