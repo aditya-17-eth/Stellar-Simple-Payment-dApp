@@ -93,9 +93,9 @@ Review historical executions directly on the Stellar Expert block explorer:
 
 The application is thoroughly optimized for all device sizes, prioritizing a responsive design that guarantees performance and accessibility on mobile devices.
 
-![Mobile Responsiveness](assets/2mobile.jpeg)
+<img src="assets/2mobile.jpeg" width="200">
 
-![Mobile Responsiveness](assets/1mobile.jpeg)
+<img src="assets/1mobile.jpeg" width="200">
 
 ## Tech Stack
 
