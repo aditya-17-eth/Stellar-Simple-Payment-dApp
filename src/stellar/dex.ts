@@ -1,5 +1,5 @@
 import * as StellarSdk from '@stellar/stellar-sdk';
-import { HORIZON_URL, NETWORK_PASSPHRASE, AssetConfig } from '../utils/constants';
+import { AssetConfig, HORIZON_URL, NETWORK_PASSPHRASE } from '../utils/constants';
 
 const server = new StellarSdk.Horizon.Server(HORIZON_URL);
 
@@ -63,17 +63,6 @@ export async function estimateSwapReceive(
   const selling = toStellarAsset(sellingAsset);
   const buying = toStellarAsset(buyingAsset);
 
-  try {
-    // strictSendPaths checks both AMMs and the CLOB to find the absolute best route.
-    const paths = await server.strictSendPaths(selling, sellAmount, [buying]).call();
-    if (paths.records.length > 0) {
-      return parseFloat(paths.records[0].destination_amount).toFixed(7);
-    }
-  } catch (err) {
-    console.warn('strictSendPaths failed, falling back to orderbook', err);
-  }
-
-  // Fallback to orderbook if path finding fails
   const orderbook = await server
     .orderbook(selling, buying)
     .limit(50)
@@ -140,7 +129,7 @@ export async function executeSwap(
 
   // Check if we need to add a trustline for the buying asset
   if (buyingAsset.issuer) {
-    const hasTrustline = sourceAccount.balances.some((bal) => {
+    const hasTrustline = sourceAccount.balances.some((bal: any) => {
       if (bal.asset_type === 'credit_alphanum4' || bal.asset_type === 'credit_alphanum12') {
         const creditBal = bal as StellarSdk.Horizon.HorizonApi.BalanceLineAsset;
         return creditBal.asset_code === buyingAsset.code && creditBal.asset_issuer === buyingAsset.issuer;
@@ -164,7 +153,7 @@ export async function executeSwap(
 
   // Add trustline operation if needed
   if (buyingAsset.issuer) {
-    const hasTrustline = sourceAccount.balances.some((bal) => {
+    const hasTrustline = sourceAccount.balances.some((bal: any) => {
       if (bal.asset_type === 'credit_alphanum4' || bal.asset_type === 'credit_alphanum12') {
         const creditBal = bal as StellarSdk.Horizon.HorizonApi.BalanceLineAsset;
         return creditBal.asset_code === buyingAsset.code && creditBal.asset_issuer === buyingAsset.issuer;
@@ -197,7 +186,6 @@ export async function executeSwap(
     .build();
 
   // SECURITY: Sign using the provided signing function (from wallet extension)
-  // Private keys never enter this application - signing happens in the wallet
   const signedXDR = await signTx(transaction.toXDR());
 
   // Submit to the network

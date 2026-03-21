@@ -27,6 +27,7 @@ export const SwapForm: React.FC<SwapFormProps> = ({
   const [bestPrice, setBestPrice] = useState('');
   const [isLoadingPrice, setIsLoadingPrice] = useState(false);
   const [txStatus, setTxStatus] = useState<TxLifecycleStatus>('idle');
+  const [rewardStatus, setRewardStatus] = useState<'idle' | 'recording' | 'success' | 'error'>('idle');
   const [txHash, setTxHash] = useState<string | null>(null);
   const [txError, setTxError] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -56,16 +57,7 @@ export const SwapForm: React.FC<SwapFormProps> = ({
         estimateSwapReceive(selling, buying, amount),
       ]);
 
-      // Calculate effective price taking AMMs into account
-      const parsedAmount = parseFloat(amount);
-      const parsedEstimate = parseFloat(estimate);
-      
-      let effectivePrice = orderbook.bestBidPrice;
-      if (parsedAmount > 0 && parsedEstimate > 0) {
-        effectivePrice = (parsedEstimate / parsedAmount).toFixed(6);
-      }
-
-      setBestPrice(effectivePrice || orderbook.bestBidPrice);
+      setBestPrice(orderbook.bestBidPrice);
       setEstimatedReceive(estimate);
     } catch (err) {
       console.error('Price fetch error:', err);
@@ -155,18 +147,23 @@ export const SwapForm: React.FC<SwapFormProps> = ({
       setTxHash(result.hash);
       setTxStatus('success');
 
-      // Show reward notification
-      setShowRewardToast(true);
-      setTimeout(() => setShowRewardToast(false), 5000);
-
-      // Record swap in Soroban contract (non-blocking)
-      recordSwap(
-        publicKey,
-        sellAsset.code,
-        buyAsset.code,
-        sellAmount,
-        signTransaction
-      ).catch((err) => console.warn('Failed to record swap:', err));
+      // Step 2: Record swap in Soroban contract for rewards
+      setRewardStatus('recording');
+      try {
+        await recordSwap(
+          publicKey,
+          sellAsset.code,
+          buyAsset.code,
+          sellAmount,
+          signTransaction
+        );
+        setRewardStatus('success');
+        setShowRewardToast(true);
+        setTimeout(() => setShowRewardToast(false), 5000);
+      } catch (recordErr) {
+        console.warn('Failed to record reward:', recordErr);
+        setRewardStatus('error');
+      }
 
       // Notify parent with swap details for instant feed update
       onSwapSuccess?.({
@@ -199,6 +196,7 @@ export const SwapForm: React.FC<SwapFormProps> = ({
 
   const resetTx = () => {
     setTxStatus('idle');
+    setRewardStatus('idle');
     setTxHash(null);
     setTxError(null);
     setValidationError(null);
@@ -321,6 +319,20 @@ export const SwapForm: React.FC<SwapFormProps> = ({
         {validationError && (
           <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-sm text-yellow-400">
             {validationError}
+          </div>
+        )}
+
+        {/* Reward status progress indicator */}
+        {rewardStatus === 'recording' && (
+          <div className="mb-4 p-4 bg-stellar-purple/10 border border-stellar-purple/30 rounded-xl flex items-center gap-3 animate-pulse">
+            <svg className="animate-spin h-5 w-5 text-stellar-purple" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            <div>
+              <p className="text-sm text-white font-medium">Claiming Rewards...</p>
+              <p className="text-xs text-stellar-purple-light">Swap complete! Please sign the second transaction to receive your SWPT tokens.</p>
+            </div>
           </div>
         )}
 

@@ -34,7 +34,7 @@ export async function getRewardBalance(publicKey: string): Promise<string> {
     })
       .addOperation(
         contract.call(
-          'balance_of',
+          'balance',
           StellarSdk.nativeToScVal(publicKey, { type: 'address' })
         )
       )
