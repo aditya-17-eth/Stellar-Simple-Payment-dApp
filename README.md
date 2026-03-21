@@ -75,9 +75,9 @@ The platform relies on the following registered on-chain programs:
 
 ## Application Interface
 
-<img src="assets/application-interface.png" width="300">
+<img src="assets/application-interface.png" width="350">
 
-<img src="assets/token-swap.png" width="300">
+<img src="assets/token-swap.png" width="350">
 
 <img src="assets/simple-payment.png" width="250">
 
