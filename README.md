@@ -16,7 +16,7 @@ Experience the live application deployed on Vercel:
 
 ## Overview
 
-StellarSwap is a production-ready decentralized application (dApp) built on the Stellar network that enables instant, low-fee token swaps directly via the native Stellar decentralized exchange (DEX). Designed with user experience in mind, it provides seamless multi-wallet connection, live price previews, and real-time transaction updates. 
+StellarSwap is a production-ready decentralized application (dApp) built on the Stellar network that enables instant, low-fee token swaps directly via the native Stellar decentralized exchange (DEX). Designed with user experience in mind, it provides seamless multi-wallet connection, live price previews, and real-time transaction updates.
 
 Furthermore, StellarSwap integrates an advanced Soroban smart contract architecture that features a native reward token system. Users automatically receive reward tokens directly to their wallets for every successful swap executed on the platform.
 
@@ -39,31 +39,30 @@ graph TD
     subgraph Frontend Framework
         UI[React + Vite + Tailwind]
     end
-    
+
     subgraph Blockchain Integration
         StellarSDK[Stellar SDK]
         WalletKit[StellarWalletsKit]
     end
-    
+
     subgraph Stellar Network TESTNET
         Horizon[Horizon API / DEX]
         Soroban[Soroban RPC]
-        
+
         subgraph Smart Contracts
-            Tracker[Swap Tracker Contract]
-            Token[Reward Token Contract]
+            Tracker[Unified Swap & Reward Contract]
         end
     end
 
     UI -->|Manages State| WalletKit
     UI -->|Builds TX| StellarSDK
     WalletKit -->|Signs TX| StellarSDK
-    
+
     StellarSDK -->|Submits Trade| Horizon
     StellarSDK -->|Invokes Contract| Soroban
-    
+
     Soroban -->|Executes record_swap| Tracker
-    Tracker -.->|Cross-contract mint| Token
+    Tracker -->|Internal balance update| Tracker
 ```
 
 ## Smart Contracts
@@ -71,12 +70,16 @@ graph TD
 The platform relies on the following registered on-chain programs:
 
 - **Network:** Stellar TESTNET
-- **Swap Contract Address:** `CBEWIQV4KSH4KXA5V7B5ELMQM7WY7JTCTHB5DEPEFVJRLL62FGMJULOY`
-- **Token Contract Address:** `PLACEHOLDER_REWARD_TOKEN_CONTRACT_ID`
+- **Swap Tracker Contract:** `CDWUBVLOPD6GWUQMRNOR5UMEEN4QTRFTHJEHAKVVXSJOTJYWEEUGR6FB`
+- **Reward Token Contract:** `CDWUBVLOPD6GWUQMRNOR5UMEEN4QTRFTHJEHAKVVXSJOTJYWEEUGR6FB` (Unified)
 
 ## Application Interface
 
 ![Application Interface Placeholder](assets/application-interface.png)
+
+![Token Swap](assets/token-swap.png)
+
+![Simple Payment](assets/simple-payment.png)
 
 ## Example Transactions
 
@@ -90,7 +93,9 @@ Review historical executions directly on the Stellar Expert block explorer:
 
 The application is thoroughly optimized for all device sizes, prioritizing a responsive design that guarantees performance and accessibility on mobile devices.
 
-![Mobile Responsiveness](assets/mobile-view.png)
+![Mobile Responsiveness](assets/2mobile.jpeg)
+
+![Mobile Responsiveness](assets/1mobile.jpeg)
 
 ## Tech Stack
 
@@ -113,20 +118,24 @@ The application is thoroughly optimized for all device sizes, prioritizing a res
 Follow these steps to deploy the application locally:
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/aditya-17-eth/Stellar-Simple-Payment-dApp.git
    cd Stellar-Simple-Payment-dApp
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Run the development server locally:**
+
    ```bash
    npm run dev
    ```
+
    The application will be accessible at `http://localhost:5173`.
 
 4. **Run tests:**
@@ -139,6 +148,12 @@ Follow these steps to deploy the application locally:
 The application maintains a strict quality standard, backed by a comprehensive suite of over 80+ unit and integration tests. All core components and business logic are fully validated.
 
 ![Test Results Placeholder](assets/test-results.png)
+
+![Property Test Results](assets/property-test.png)
+
+### Security Audit
+
+![Security Audit](assets/security-audit.png)
 
 ## Demo Video
 
