@@ -40,7 +40,7 @@ jobs:
             ${{ runner.os }}-cargo-${{ matrix.contract }}-
 
       - name: Install Stellar CLI
-        run: cargo install --locked stellar-cli --features opt
+        run: cargo install --locked stellar-cli
 
       - name: Build contract to WASM
         working-directory: contracts/${{ matrix.contract }}
