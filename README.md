@@ -115,7 +115,7 @@ The project runs two independent GitHub Actions workflows to ensure quality acro
 | Workflow | Trigger | What it validates |
 |---|---|---|
 | **CI** (`ci.yml`) | Any push/PR to `main` | Installs Node.js dependencies, runs 80+ Vitest tests, and builds the production bundle. |
-| **Contracts CI** (`contracts.yml`) | Changes inside `contracts/` | Installs Rust + `wasm32` target, builds each Soroban contract to WASM via Stellar CLI, verifies artifacts, and runs `cargo test`. |
+| **Contracts CI** (`contracts.yml`) | Any push/PR to `main` | Installs Rust + `wasm32` target, builds each Soroban contract to WASM via Stellar CLI, verifies artifacts, and runs `cargo test`. |
 
 Both pipelines must pass before a pull request can be merged.
 
