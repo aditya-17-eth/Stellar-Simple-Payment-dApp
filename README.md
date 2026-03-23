@@ -1,6 +1,7 @@
 # StellarSwap
 
 [![CI](https://github.com/aditya-17-eth/Stellar-Simple-Payment-dApp/actions/workflows/ci.yml/badge.svg)](https://github.com/aditya-17-eth/Stellar-Simple-Payment-dApp/actions/workflows/ci.yml)
+[![Contracts CI](https://github.com/aditya-17-eth/Stellar-Simple-Payment-dApp/actions/workflows/contracts.yml/badge.svg)](https://github.com/aditya-17-eth/Stellar-Simple-Payment-dApp/actions/workflows/contracts.yml)
 [![TESTNET](https://img.shields.io/badge/Network-TESTNET-yellow)](https://stellar.org)
 [![Stellar SDK](https://img.shields.io/badge/Stellar%20SDK-12.0-blue)](https://github.com/stellar/js-stellar-sdk)
 [![React](https://img.shields.io/badge/React-18.3-blue)](https://react.dev)
@@ -28,7 +29,7 @@ Furthermore, StellarSwap integrates an advanced Soroban smart contract architect
 - **Reward tokens on swap:** Automated on-chain yield for platform users through Soroban contract orchestration.
 - **Contract interaction from frontend:** End-to-end integration for submitting, simulating, and validating smart contract invocations.
 - **Mobile responsive UI:** A finely tuned, adaptable interface engineered with Tailwind CSS for mobile and desktop consistency.
-- **CI/CD pipeline:** Robust GitHub Actions configuration for automated testing and continuous deployment.
+- **CI/CD pipeline:** Robust GitHub Actions configuration for automated frontend testing and continuous deployment, plus a dedicated Soroban contracts pipeline that builds WASM artifacts and runs on-chain unit tests.
 
 ## Architecture
 
@@ -106,6 +107,17 @@ The application is thoroughly optimized for all device sizes, prioritizing a res
 - **Soroban:** Smart Contract ecosystem for Stellar
 - **Vitest:** High-speed Unit and Integration Testing
 - **GitHub Actions:** CI/CD Automation
+
+## CI/CD Pipelines
+
+The project runs two independent GitHub Actions workflows to ensure quality across the entire stack:
+
+| Workflow | Trigger | What it validates |
+|---|---|---|
+| **CI** (`ci.yml`) | Any push/PR to `main` | Installs Node.js dependencies, runs 80+ Vitest tests, and builds the production bundle. |
+| **Contracts CI** (`contracts.yml`) | Changes inside `contracts/` | Installs Rust + `wasm32` target, builds each Soroban contract to WASM via Stellar CLI, verifies artifacts, and runs `cargo test`. |
+
+Both pipelines must pass before a pull request can be merged.
 
 ## Prerequisites
 

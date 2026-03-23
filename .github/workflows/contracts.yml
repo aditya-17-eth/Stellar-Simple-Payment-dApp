@@ -1,0 +1,65 @@
+name: Contracts CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'contracts/**'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  build-and-test:
+    name: Build & Test Soroban Contracts
+    runs-on: ubuntu-22.04
+
+    strategy:
+      matrix:
+        contract: [reward_token, swap_tracker]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo registry & build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            contracts/${{ matrix.contract }}/target
+          key: ${{ runner.os }}-cargo-${{ matrix.contract }}-${{ hashFiles('contracts/${{ matrix.contract }}/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.contract }}-
+
+      - name: Install Stellar CLI
+        run: cargo install --locked stellar-cli --features opt
+
+      - name: Build contract to WASM
+        working-directory: contracts/${{ matrix.contract }}
+        run: stellar contract build
+
+      - name: Verify WASM artifact exists
+        working-directory: contracts/${{ matrix.contract }}
+        run: |
+          WASM_FILE=$(find target/wasm32-unknown-unknown/release -name "*.wasm" -type f | head -1)
+          if [ -z "$WASM_FILE" ]; then
+            echo "::error::No WASM artifact found after build"
+            exit 1
+          fi
+          echo "✅ Built: $WASM_FILE ($(stat -c%s "$WASM_FILE") bytes)"
+
+      - name: Run contract tests
+        working-directory: contracts/${{ matrix.contract }}
+        run: cargo test --release
