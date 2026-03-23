@@ -184,11 +184,11 @@ mod test {
         client.record_swap(&user, &from, &to, &1000_i128, &1700000000_u64);
 
         assert_eq!(client.get_swap_count(), 1);
-        assert_eq!(client.balance_of(&user), 10_0000000);
+        assert_eq!(client.balance(&user), 10_0000000);
         assert_eq!(client.total_supply(), 10_0000000);
         
         // Second swap
         client.record_swap(&user, &to, &from, &500_i128, &1700001000_u64);
-        assert_eq!(client.balance_of(&user), 20_0000000);
+        assert_eq!(client.balance(&user), 20_0000000);
     }
 }
