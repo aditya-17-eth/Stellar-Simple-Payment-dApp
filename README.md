@@ -182,4 +182,3 @@ Watch a quick walkthrough of compiling, transacting, and interacting with Stella
 
 ---
 
-**Disclaimer:** This application interfaces exclusively with the Stellar TESTNET environments. Do not send Mainnet assets to these addresses.
