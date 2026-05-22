@@ -119,11 +119,6 @@ The project runs two independent GitHub Actions workflows to ensure quality acro
 
 Both pipelines must pass before a pull request can be merged.
 
-## Prerequisites
-
-- **Node.js 18.x** or later
-- **Stellar Wallet** (Freighter or xBull)
-- **TESTNET XLM** (Available via [Friendbot](https://laboratory.stellar.org/#account-creator?network=test))
 
 ## Setup Instructions
 
