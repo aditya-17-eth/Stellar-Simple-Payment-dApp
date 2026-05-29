@@ -25,7 +25,6 @@ Furthermore, StellarSwap integrates an advanced Soroban smart contract architect
 
 - **Multi-wallet connect/disconnect:** Universal compatibility with popular Stellar wallets including Freighter and xBull.
 - **XLM swap execution:** Native order placement and fulfillment using Stellar's built-in DEX.
-- **Real-time transaction tracking:** Live activity feeds, lifecycle tracking, and instant balance updates.
 - **Reward tokens on swap:** Automated on-chain yield for platform users through Soroban contract orchestration.
 - **Contract interaction from frontend:** End-to-end integration for submitting, simulating, and validating smart contract invocations.
 - **Mobile responsive UI:** A finely tuned, adaptable interface engineered with Tailwind CSS for mobile and desktop consistency.
